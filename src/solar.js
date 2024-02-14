@@ -59,7 +59,8 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
 
     if (P < -1) P = -1 // problemas de precisión
 
-    const solar_acim = sign(angl) * abs(acos(P))
+    // sign(...) puede dar 0, lo que causa que se formen picos al mediodía en las formulas siguientes
+    const solar_acim = (angl < 0 ? -1 : 1) * abs(acos(P))
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * cos_incid: Coseno del ángulo de incidencia del sol y el panel (1.6.3) en radianes *
@@ -148,5 +149,6 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
 
     const I_T = beam + diffuse
 
-    return {I_T, I_b, I_d, H_d, K_Tm,I, r_t, a, b, I_o, hora_1, hora_2, H_o, exce, R_b, cos_incid, cenit, cos_cenit, hora_salida, decl, n, angl}
+    return {
+        angl, n, decl, hora_salida, solar_acim, cos_cenit, cenit, cos_incid, R_b, exce, H_o, hora_2, hora_1, I_o, b, a, r_t, I, K_Tm, H_d, I_d, I_b, I_T}
 }

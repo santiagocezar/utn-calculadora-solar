@@ -1,11 +1,7 @@
 // @ts-check
 
-import * as constantes from "./formulas/constantes.js"
-import * as mensuales from "./formulas/mensuales.js"
-import * as horarias from "./formulas/horarias.js"
-import { irradiacion_total } from "./formulas/todo.js"
+import { irradiacion_total } from "../solar.js"
 
-const { sin, cos, tan, acos, sign, abs, atan2, PI } = Math
 
 /**
  * Una función que devuelve los MINUTOS del día para cierta posición del sol.
@@ -44,38 +40,20 @@ export function util_angulo_a_tiempo(latitud, longitud, zona, dia, angulo) {
 }
 
 // Semi-constantes
-const lat = -31.417*constantes.A_RADIAN // Phi
+const lat = -31.417*Math.PI / 180 // Phi
 const incl = lat         // Beta
 
 // Ingresa el usuario
 const mes = 5
-const hora = 13
+const hora = 12
 
-// Dependen de lo ingresado
-const delta = mensuales.declinacion(constantes.DIAS_JULIANOS[mes])
-const epsilon = mensuales.excentricidad(constantes.DIAS_JULIANOS[mes])
-const omega_s = mensuales.puesta_salida(lat, delta)
-const H_0 = mensuales.irradiacion_ecuador_diaria(lat, delta, epsilon, omega_s)
-const K_Tm = mensuales.claridad_media(mes, H_0)
-const F_Dm= mensuales.fraccion_difusa(K_Tm) // ok!
-const H_d= mensuales.irradiacion_difusa_diaria(mes, omega_s, K_Tm)
+const valores1 = irradiacion_total(lat, incl, Math.PI, hora, mes)
+const valores2 = irradiacion_total(lat, incl, Math.PI, hora-.001, mes)
 
-const omega = horarias.angulo_horario(hora)
-const cos_theta_z = horarias.cos_cenit(lat, delta, omega)
-const gamma_s = horarias.acimutal_desmos(omega, lat, delta, cos_theta_z)
+const epsilon = .1
 
-const I_0= horarias.irradiacion_horaria(lat, delta, epsilon, omega, cos_theta_z)
-const I_d = horarias.irradiacion_horaria_difusa(I_0, H_0, H_d)
-const I = horarias.irradiacion_horaria_global(mes, omega, omega_s)
-const I_bn= horarias.irradiacion_directa_normal(I, I_d, cos_theta_z)
-
-const I_final = horarias.irradiacion_horaria_media(I, I_d, Math.acos(cos_theta_z), incl, gamma_s, Math.PI)
-
-const I_T = irradiacion_total(lat, incl, Math.PI, hora, mes)
-
-console.log(I_final)
-console.log(I_T)
-
-
-// console.log({lat, delta, epsilon, gamma_s, omega_s, cos_theta_z, omega, H: constantes.H[mes], H_0, K_Tm, F_Dm, H_d, I_0, I_d, I, I_bn, I_final})
-
+for (const v in valores1) {
+    const delta = valores1[v] - valores2[v]
+    const color = Math.abs(delta) < epsilon ? '\x1b[0;32m' : '\x1b[0;31m'
+    console.log(`${v}: ${color}${delta.toFixed(10)}\x1b[0m (${valores1[v]} - ${valores2[v]})`)
+}
