@@ -48,7 +48,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * hora_salida: Ángulo horario de puesta y salida del sol (1.6.10) en radianes *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const hora_salida = acos(-tan(decl)*tan(lati))
+    const angl_salida = acos(-tan(decl)*tan(lati))
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * cenit: Ángulo cenital del sol (1.6.5) en radianes *
@@ -93,7 +93,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
 
     // MJ/m²
     const H_o_joules = (24 * 3600 / PI) * SOLAR * exce
-        * (cos(lati) * cos(decl) * sin(hora_salida) + hora_salida * sin(lati)* sin(decl))
+        * (cos(lati) * cos(decl) * sin(angl_salida) + angl_salida * sin(lati)* sin(decl))
 
     // kW/m²
     const H_o = H_o_joules / 3.6
@@ -102,12 +102,13 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * I_o: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const hora_1 = angl - PI / 24;
-    const hora_2 = angl + PI / 24;
+    // Equivalente en radianes de un intervalo de 1 hora simétrico,
+    const angl_1 = angl - PI / 24;
+    const angl_2 = angl + PI / 24;
 
     // MJ/m²
     const I_o_joules = (12 * 3600 / PI) * SOLAR * exce
-        * (cos(lati) * cos(decl) * (sin(hora_2) - sin(hora_1)) + (hora_2 - hora_1) * sin(lati) * sin(decl))
+        * (cos(lati) * cos(decl) * (sin(angl_2) - sin(angl_1)) + (angl_2 - angl_1) * sin(lati) * sin(decl))
 
     // kW/m²
     const I_o = I_o_joules / 3.6
@@ -116,11 +117,11 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * r_t: Razón entre la radiación total horaria y diaria (2.13.2) *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const a = 0.409 + 0.5016 * sin(hora_salida - PI/3)
-    const b = 0.6609 - 0.4767 * sin(hora_salida - PI/3)
+    const a = 0.409 + 0.5016 * sin(angl_salida - PI/3)
+    const b = 0.6609 - 0.4767 * sin(angl_salida - PI/3)
 
     const r_t = PI/24 * (a + b * cos(angl)) *
-        (cos(angl) - cos(hora_salida)) / (sin(hora_salida) - hora_salida * cos(hora_salida))
+        (cos(angl) - cos(angl_salida)) / (sin(angl_salida) - angl_salida * cos(angl_salida))
 
     /* * * * * * * * * * * * * * * * * * * * * *
      * I: Irradiación total (2.13.1) en kWh/m² *
@@ -141,15 +142,16 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const fresco = 1.391 - 3.560 * K_Tm + 4.189 * pow(K_Tm, 2) - 2.137 * pow(K_Tm, 3)
     const calido = 1.311 - 3.022 * K_Tm + 3.427 * pow(K_Tm, 2) - 1.821 * pow(K_Tm, 3)
 
-    const H_d = H[mes] * (hora_salida <= 1.42 ? fresco : calido)
+    const H_d = H[mes] * (angl_salida <= 1.42 ? fresco : calido)
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_d: Irradiación horaria difusa (2.15.1) en kWh/m²  *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    // const r_d = PI / 24 * (cos(hora) - cos(hora_salida)) / (sin(hora_salida) - hora_salida * cos(hora_salida))
+    const r_d = PI / 24 * (cos(angl) - cos(angl_salida)) / (sin(angl_salida) - angl_salida * cos(angl_salida))
 
-    const I_d = I_o * H_d / H_o
+    const I_d = r_d * H_d
+    // const I_d = I_o * H_d / H_o
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_T: Irradiación horaria total (2.15.1) en kWh/m² *
@@ -163,5 +165,5 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const I_T = (beam + diffuse) // * 4/3
 
     return {
-        angl, n, decl, hora_salida, solar_acim, cos_cenit, cenit, cos_incid, R_b, exce, H_o, hora_2, hora_1, I_o, b, a, r_t, I, K_Tm, H_d, I_d, I_b, I_T}
+        angl, n, decl, hora_salida: angl_salida, solar_acim, cos_cenit, cenit, cos_incid, R_b, exce, H_o, angl_2, angl_1, I_o, b, a, r_t, I, K_Tm, H_d, I_d, I_b, I_T}
 }
