@@ -91,9 +91,12 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * H_o: Irradiación diaria en superficie horizontal a tope de atmósfera (1.10.3) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    // se convirtió de MJ/m² a kWh/m²
-    const H_o = (24 / PI / 1000) * SOLAR * exce
+    // MJ/m²
+    const H_o_joules = (24 * 3600 / PI) * SOLAR * exce
         * (cos(lati) * cos(decl) * sin(hora_salida) + hora_salida * sin(lati)* sin(decl))
+
+    // kW/m²
+    const H_o = H_o_joules / 3.6
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_o: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
@@ -102,9 +105,12 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const hora_1 = angl - PI / 24;
     const hora_2 = angl + PI / 24;
 
-    // se convirtió de MJ/m² a kWh/m²
-    const I_o = (12 / PI / 1000) * SOLAR * exce
+    // MJ/m²
+    const I_o_joules = (12 * 3600 / PI) * SOLAR * exce
         * (cos(lati) * cos(decl) * (sin(hora_2) - sin(hora_1)) + (hora_2 - hora_1) * sin(lati) * sin(decl))
+
+    // kW/m²
+    const I_o = I_o_joules / 3.6
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * r_t: Razón entre la radiación total horaria y diaria (2.13.2) *
@@ -154,7 +160,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const beam = I_b * R_b
     const diffuse = I_d * (1+cos(incl)) / 2
 
-    const I_T = (beam + diffuse) * 4/3
+    const I_T = (beam + diffuse) // * 4/3
 
     return {
         angl, n, decl, hora_salida, solar_acim, cos_cenit, cenit, cos_incid, R_b, exce, H_o, hora_2, hora_1, I_o, b, a, r_t, I, K_Tm, H_d, I_d, I_b, I_T}

@@ -44,7 +44,7 @@ const lat = -31.417*Math.PI / 180 // Phi
 const incl = lat         // Beta
 
 // Ingresa el usuario
-const mes = 5
+const mes = 11
 const hora = 12
 
 const valores1 = irradiacion_total(lat, incl, Math.PI, hora, mes)
