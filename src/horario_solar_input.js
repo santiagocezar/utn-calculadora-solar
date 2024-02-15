@@ -1,9 +1,9 @@
 //@ts-check
-import * as constantes from "./formulas/constantes.js"
-import * as mensuales from "./formulas/mensuales.js"
-import * as horarias from "./formulas/horarias.js"
+//import * as constantes from "./formulas/constantes.js"
+//import * as mensuales from "./formulas/mensuales.js"
+//import * as horarias from "./formulas/horarias.js"
 
-import * as solar from './solar.js'
+//import * as solar from './solar.js'
 // import {plotEverything} from './plot.js'
 
 // plotEverything()
