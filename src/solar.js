@@ -2,25 +2,32 @@
 
 const { sin, cos, tan, acos, sign, abs, pow, PI } = Math
 
-export const SOLAR = 1360.8 // Irradiación global, constante Solar en Watts sobre metro cuadrado
 
-export const DIAS_JULIANOS = [
+/* * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Energía que provee el sol, constante solar (W/m²) *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * */
+const SOLAR = 1360.8
+
+/* * * * * * * * * * * * * * * *
+ * El día promedio de cada mes *
+ * * * * * * * * * * * * * * * */
+const DIAS_JULIANOS = [
     17,47,75,105,135,162,198,228,258,288,318,344
 ]
 
-/**
- * Irradiación por metro cuadrado (kWh/m²)
- */
+/* * * * * * * * * * * * * * * * * * * * *
+ * Irradiación mensual promedio (kWh/m²) *
+ * * * * * * * * * * * * * * * * * * * * */
 export const H = [
     6,5.5,4.5,3.5,3,2,2.5,3,4,5.5,6,6.5
 ]
 
 /**
- * @param {number} lati Latitud
- * @param {number} incl Inclinación del panel
- * @param {number} acim Acimut del panel
- * @param {number} hora Ángulo horario
- * @param {number} mes Mes
+ * @param {number} lati Latitud del lugar (en radianes)
+ * @param {number} incl Inclinación del panel (en radianes)
+ * @param {number} acim Acimut del panel (en radianes)
+ * @param {number} hora Hora del día (de 0 a 24)
+ * @param {number} mes Índice del mes (enero es 0, diciembre es 11)
  */
 export function irradiacion_total(lati, incl, acim, hora, mes) {
     const angl = (hora - 12) / 12 * PI
@@ -50,9 +57,9 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const cos_cenit = cos(lati) * cos(decl) * cos(angl) + sin(lati) * sin(decl)
     const cenit = acos(cos_cenit)
 
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * solar_acim: Ángulo acimutal del sol (1.6.6) en radianes *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * */
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     let P = (cos_cenit * sin(lati) - sin(decl))
         / (sin(cenit) * cos(lati))
@@ -89,7 +96,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
         * (cos(lati) * cos(decl) * sin(hora_salida) + hora_salida * sin(lati)* sin(decl))
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * H_o: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
+     * I_o: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     const hora_1 = angl - PI / 24;
@@ -109,9 +116,9 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const r_t = PI/24 * (a + b * cos(angl)) *
         (cos(angl) - cos(hora_salida)) / (sin(hora_salida) - hora_salida * cos(hora_salida))
 
-    /* * * * * * * * * * * * * * * * * * * * * * *
+    /* * * * * * * * * * * * * * * * * * * * * *
      * I: Irradiación total (2.13.1) en kWh/m² *
-     * * * * * * * * * * * * * * * * * * * * * * */
+     * * * * * * * * * * * * * * * * * * * * * */
 
     const I = H[mes] * r_t
 
@@ -130,24 +137,24 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
 
     const H_d = H[mes] * (hora_salida <= 1.42 ? fresco : calido)
 
-    /* * * * * * * * * * * * * * * * * * * * * * *
-     * I_d: Irradiación horaria difusa (2.15.1) en kWh/m² *
-     * * * * * * * * * * * * * * * * * * * * * * */
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * I_d: Irradiación horaria difusa (2.15.1) en kWh/m²  *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     // const r_d = PI / 24 * (cos(hora) - cos(hora_salida)) / (sin(hora_salida) - hora_salida * cos(hora_salida))
 
     const I_d = I_o * H_d / H_o
 
-    /* * * * * * * * * * * * * * * * * * * * * * *
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_T: Irradiación horaria total (2.15.1) en kWh/m² *
-     * * * * * * * * * * * * * * * * * * * * * * */
+     * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     const I_b = I - I_d
 
     const beam = I_b * R_b
     const diffuse = I_d * (1+cos(incl)) / 2
 
-    const I_T = beam + diffuse
+    const I_T = (beam + diffuse) * 4/3
 
     return {
         angl, n, decl, hora_salida, solar_acim, cos_cenit, cenit, cos_incid, R_b, exce, H_o, hora_2, hora_1, I_o, b, a, r_t, I, K_Tm, H_d, I_d, I_b, I_T}
