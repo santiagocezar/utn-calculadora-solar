@@ -16,10 +16,28 @@ const DIAS_JULIANOS = [
 ]
 
 /* * * * * * * * * * * * * * * * * * * * *
- * Irradiación mensual promedio (kWh/m²) *
+ * Irradiación mensual promedio (Atlas ) (kWh/m²) *
+ * * * * * * * * * * * * * * * * * * * * */
+export const H_atlas = [
+    6,5.5,4.5,3.5,3,2,2.5,3,4,5.5,6,6.5
+]
+
+/* * * * * * * * * * * * * * * * * * * * *
+ * Irradiación mensual promedio (Atlas ) (kWh/m²) *
  * * * * * * * * * * * * * * * * * * * * */
 export const H = [
-    6,5.5,4.5,3.5,3,2,2.5,3,4,5.5,6,6.5
+    7.689,
+    6.804,
+    5.714,
+    4.238,
+    3.323,
+    2.821,
+    2.989,
+    3.805,
+    5.167,
+    6.224,
+    7.244,
+    7.541,
 ]
 
 /**
@@ -30,7 +48,7 @@ export const H = [
  * @param {number} mes Índice del mes (enero es 0, diciembre es 11)
  */
 export function irradiacion_total(lati, incl, acim, hora, mes) {
-    const angl = (hora - 12) / 12 * PI
+    const angl = (hora - 12) * PI / 12
 
     /* * * * * * * * * * * * * * * * * * * * * * *
      * n: Día juliano para tal mes (Tabla 1.6.1) *
@@ -95,8 +113,8 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const H_o_joules = (24 * 3600 / PI) * SOLAR * exce
         * (cos(lati) * cos(decl) * sin(angl_salida) + angl_salida * sin(lati)* sin(decl))
 
-    // kW/m²
-    const H_o = H_o_joules / 3.6
+    // kWh/m²
+    const H_o = H_o_joules / 3600000
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_o: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
@@ -111,7 +129,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
         * (cos(lati) * cos(decl) * (sin(angl_2) - sin(angl_1)) + (angl_2 - angl_1) * sin(lati) * sin(decl))
 
     // kW/m²
-    const I_o = I_o_joules / 3.6
+    const I_o = I_o_joules / 3600000
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * r_t: Razón entre la radiación total horaria y diaria (2.13.2) *
@@ -148,10 +166,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * I_d: Irradiación horaria difusa (2.15.1) en kWh/m²  *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const r_d = PI / 24 * (cos(angl) - cos(angl_salida)) / (sin(angl_salida) - angl_salida * cos(angl_salida))
-
-    const I_d = r_d * H_d
-    // const I_d = I_o * H_d / H_o
+    const I_d = I_o * H_d / H_o
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_T: Irradiación horaria total (2.15.1) en kWh/m² *
