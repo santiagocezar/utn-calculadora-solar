@@ -40,20 +40,28 @@ export function util_angulo_a_tiempo(latitud, longitud, zona, dia, angulo) {
 }
 
 // Semi-constantes
-const lat = -31.417*Math.PI / 180 // Phi
-const incl = lat         // Beta
+const lat = -31.417 * Math.PI / 180 // Phi
+const incl = lat //28 * Math.PI/180         // Beta
 
 // Ingresa el usuario
-const mes = 11
+const mes = 0
 const hora = 12
 
-const valores1 = irradiacion_total(lat, incl, Math.PI, hora, mes)
-const valores2 = irradiacion_total(lat, incl, Math.PI, hora-.001, mes)
+const valores = irradiacion_total(lat, incl, Math.PI, hora, mes)
 
 const epsilon = .1
 
+console.log(valores)
+
+function diario(mes) {
+    for (let hora = 0; hora < 24; hora++) {
+        const { I_T } = irradiacion_total(lat, incl, Math.PI, hora, mes)
+    }
+}
+
+/*
 for (const v in valores1) {
     const delta = valores1[v] - valores2[v]
     const color = Math.abs(delta) < epsilon ? '\x1b[0;32m' : '\x1b[0;31m'
     console.log(`${v}: ${color}${delta.toFixed(10)}\x1b[0m (${valores1[v]} - ${valores2[v]})`)
-}
+}*/

@@ -6,7 +6,7 @@ const { sin, cos, tan, acos, sign, abs, pow, PI } = Math
 /* * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Energía que provee el sol, constante solar (W/m²) *
  * * * * * * * * * * * * * * * * * * * * * * * * * * */
-const SOLAR = 1360.8
+const SOLAR = 1367
 
 /* * * * * * * * * * * * * * * *
  * El día promedio de cada mes *
@@ -23,7 +23,7 @@ export const H_atlas = [
 ]
 
 /* * * * * * * * * * * * * * * * * * * * *
- * Irradiación mensual promedio (Atlas ) (kWh/m²) *
+ * Irradiación mensual promedio (ND) (kWh/m²) *
  * * * * * * * * * * * * * * * * * * * * */
 export const H = [
     7.689,
@@ -38,6 +38,24 @@ export const H = [
     6.224,
     7.244,
     7.541,
+]
+
+/* * * * * * * * * * * * * * * * * * * * *
+ * Irradiación mensual promedio (GH) (kWh/m²) *
+ * * * * * * * * * * * * * * * * * * * * */
+export const H_GH = [
+    7.947,
+    6.882,
+    6.19,
+    4.792,
+    4.462,
+    3.881,
+    4.154,
+    4.24,
+    5.674,
+    5.996,
+    7.019,
+    6.959,
 ]
 
 /**
@@ -92,6 +110,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     const cos_incid = cos_cenit * cos(incl) + sin(cenit) * sin (incl) * cos(solar_acim - acim)
+    const incid = acos(cos_incid)
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * R_b: Razón de la radiación directa en superficie inclinada y horizontal (1.8.1) *
@@ -103,17 +122,21 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * exce: La distancia de la tierra al sol en AU (1.4.1*) *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+    /*
+     * En la review de Maleki (energies), usa un factor de 0.0033, citando al artículo de Beckman.
+     * Esto debe ser un error, porque en el artículo se usa un valor 0.033, así que tomamos eso
+     */
     const exce = 1 + 0.033 * cos(2 * PI * n / 365)
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * H_o: Irradiación diaria en superficie horizontal a tope de atmósfera (1.10.3) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    // MJ/m²
+    // en J/m²
     const H_o_joules = (24 * 3600 / PI) * SOLAR * exce
         * (cos(lati) * cos(decl) * sin(angl_salida) + angl_salida * sin(lati)* sin(decl))
 
-    // kWh/m²
+    // convertido a kWh/m²
     const H_o = H_o_joules / 3600000
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -142,31 +165,33 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
         (cos(angl) - cos(angl_salida)) / (sin(angl_salida) - angl_salida * cos(angl_salida))
 
     /* * * * * * * * * * * * * * * * * * * * * *
-     * I: Irradiación total (2.13.1) en kWh/m² *
+     * I: Irradiación total en superficie horizontal (2.13.1) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * */
 
     const I = H[mes] * r_t
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * *
-     * K_Tm: Índice de claridad medio mensual  (2.12?) *
+     * k_T: Índice de claridad horario (2.9.3) *
      * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const K_Tm = H[mes] / H_o
+    const k_T = I / I_o
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * H_d: Irradiación diaria difusa (2.12.1) en kWh/m² *
+     * I_d: Irradiación horaria difusa (2.10.1) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const fresco = 1.391 - 3.560 * K_Tm + 4.189 * pow(K_Tm, 2) - 2.137 * pow(K_Tm, 3)
-    const calido = 1.311 - 3.022 * K_Tm + 3.427 * pow(K_Tm, 2) - 1.821 * pow(K_Tm, 3)
+    const I_d_param = (
+        k_T <= 0.22 ?
+            1 - 0.09 * k_T
+        :
+        k_T <= 0.80 ?
+            0.9511 - 0.1604 * k_T + 4.388 * pow(k_T, 2)
+            - 16.638 * pow(k_T, 3) + 12.336 * pow(k_T, 4)
+        :
+        0.165
+    )
 
-    const H_d = H[mes] * (angl_salida <= 1.42 ? fresco : calido)
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * I_d: Irradiación horaria difusa (2.15.1) en kWh/m²  *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const I_d = I_o * H_d / H_o
+    const I_d = I_d_param * I
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_T: Irradiación horaria total (2.15.1) en kWh/m² *
@@ -180,5 +205,5 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const I_T = (beam + diffuse) // * 4/3
 
     return {
-        angl, n, decl, hora_salida: angl_salida, solar_acim, cos_cenit, cenit, cos_incid, R_b, exce, H_o, angl_2, angl_1, I_o, b, a, r_t, I, K_Tm, H_d, I_d, I_b, I_T}
+        angl, n, decl, hora_salida: angl_salida, solar_acim, cos_cenit, cenit, cos_incid, incid, R_b, exce, H_o, angl_2, angl_1, I_o, b, a, r_t, I, k_T, I_d_param, I_d, I_b, I_T}
 }
