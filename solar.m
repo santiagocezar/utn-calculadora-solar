@@ -1,42 +1,90 @@
-clear
-
 SOLAR = 1360;
-DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
-Hs = [7.689, 6.804, 5.714, 4.238, 3.323, 2.821, 2.989, 3.805, 5.167, 6.224, 7.244, 7.541];
-MesLabels = ['Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'];
-
-h = 0:24;
-mes = 1:12;
-
-n = DiasJulianos(mes);
-
-# Parámetros que ingresa el usuario
-latitud=deg2rad(-31.4); # phi
-inclinacion=latitud;    # beta
-acimut=pi;              # gamma
 
 # Cambian a lo largo del año
-declinacion=(23.45*pi/180)*sin(2*pi*(284+n)/365); # delta
+declinacion = (23.45 * pi / 180) * sin(2 * pi * (284 + n) / 365);
 excentricidad = 1+0.033*cos(2*pi*n/365);
-anguloSalida=acos(-tan(latitud)*tan(declinacion));
+anguloSalida = acos(-tan(latitud)*tan(declinacion));
 horaSalida = anguloSalida/pi * 12;
 
 # Ángulos del sol durante el día
+anguloHorario = (h-12)*(pi/12);
+anguloCenital = acos(
+    cos(latitud) * cos(declinacion) * cos(anguloHorario) + sin(latitud) * sin(declinacion)
+);
+acimutSolarParam = abs(acos(
+    (cos(anguloCenital)*sin(latitud)-sin(declinacion))
+    ./(sin(anguloCenital)*cos(latitud))
+));
 
+acimutSolar = merge(anguloHorario < 0, -acimutSolarParam, acimutSolarParam);
+# acimutSolar = arrayfun(@(g) anguloHorario < 0 && -g || g, acimutSolarParam);
 
-# anguloSolar=(h-12)pi/12;
-# cenit=acos( cos(latitud)cos(declinacion)cos(anguloSolar)+sin(latitud)sin(declinacion));
-# acimutSolar=If(anguloSolar<0-11)Abs(acos((cos(cenit)sin(latitud)-sin(declinacion))/(sin(cenit)cos(latitud))));
-# incidencia=acos(cos(cenit)cos(inclinacion)+sin(cenit)sin(inclinacion)cos(acimutSolar-acimut));
-# incidencia2=sin(declinacion)*sin(latitud)*cos(inclinacion)-sin(declinacion)*cos(latitud)*sin(inclinacion)*cos(acimut)+cos(declinacion)*cos(latitud)*cos(inclinacion)*cos(anguloSolar)+cos(declinacion)*sin(latitud)*sin(inclinacion)*cos(acimut)*cos(anguloSolar)+cos(declinacion)*sin(acimut)*sin(inclinacion)*sin(anguloSolar);
+anguloIncidencia=acos(cos(anguloCenital).*cos(inclinacion)+sin(anguloCenital).*sin(inclinacion).*cos(acimutSolar-acimut));
+
+# Irradiación
+angulo1 = anguloHorario - pi/24;
+angulo2 = anguloHorario + pi/24;
+IoJ = (12 * 3600 / pi) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * (sin(angulo2) - sin(angulo1)) + (angulo2 - angulo1) * sin(latitud) * sin(declinacion));
+Io=IoJ/3600000;
+
+a = 0.409 + 0.5016 * sin(anguloSalida-pi/3);
+b = 0.6609 - 0.4767 * sin(anguloSalida-pi/3);
+
+rt = pi/24 * (a + b * cos(anguloHorario)) .* (cos(anguloHorario) - cos(anguloSalida)) / (sin(anguloSalida) - anguloSalida * cos(anguloSalida));
+
+II = H*rt;
+
+# HoJ = (24 * 3600 / pi) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud) * sin(declinacion));
+# Ho=HoJ/3600000;
+#
+# KT=H/Ho;
+#
+# fDm=1-1.13*KT;
+#
+# Hd=fDm*H;
+# Id = Io * Hd / Ho;
+#
+
+kT = II/Io;
+Id = II * 0.165
+
+if (kT <= 0.22)
+    Id = II * (1 - 0.09 * kT)
+elseif (kT < 0.8)
+    Id = II * (0.9511 - 0.1604 * kT + 4.388 * kT^2 - 16.638 * kT^3 + 12.336 * kT^4)
+end
+Ib = II - Id;
+
+Rb = cos(anguloIncidencia) / cos(anguloCenital);
+IT = Ib * Rb + Id * (1 + cos(inclinacion)) / 2;
+
+# Ibn = Ib / cos(anguloCenital);
+
+# sin(D) * sin(L) * cos(B))
+# - (sin(D) * cos(L) * sin(B) * cos(gamma))
+# + (cos(D) * cos(L) * cos(B) * cos(W))
+# + (cos(D) * sin(L) * sin(B) * cos(gamma) * cos(W))
+# + (cos(D) * sin(gamma) * sin(B) * sin(W)
+
+# cosAnguloIncidencia2=sin(declinacion).*sin(latitud).*cos(inclinacion)
+# -sin(declinacion).*cos(latitud).*sin(inclinacion).*cos(acimutSolar)
+# +cos(declinacion).*cos(latitud).*cos(inclinacion).*cos(anguloHorario)
+# +cos(declinacion).*sin(latitud).*sin(inclinacion).*cos(acimutSolar).*cos(anguloHorario)
+# +cos(declinacion).*sin(acimutSolar).*sin(inclinacion).*sin(anguloHorario);
+
+# IT = Ib * Rb + Id * (1 + cos(inclinacion)) / 2;
+# IT = Ibn * cosAnguloIncidencia2 + Id * (1 + cos(inclinacion)) / 2;
+
+# Difusa de la guía
+# anguloIncidencia2=sin(declinacion)*sin(latitud)*cos(inclinacion)-sin(declinacion)*cos(latitud)*sin(inclinacion)*cos(acimut)+cos(declinacion)*cos(latitud)*cos(inclinacion)*cos(anguloHorario)+cos(declinacion)*sin(latitud)*sin(inclinacion)*cos(acimut)*cos(anguloHorario)+cos(declinacion)*sin(acimut)*sin(inclinacion)*sin(anguloHorario);
 #
 #
 # (* ::Input:: *)
 # (*Manipulate(*)
 # (*Block({n=DiasJulianos((mes)) H=Hs((mes))}*)
-# (*Plot({anguloSolarcenitcos(cenit)acimutSolarincidencia cos(incidencia) incidencia2}{h0 24}*)
+# (*Plot({anguloHorarioanguloCenitalcos(anguloCenital)acimutSolaranguloIncidencia cos(anguloIncidencia) anguloIncidencia2}{h0 24}*)
 # (*PlotLabel->'\(CapitalAAcute)ngulos solares durante 24 horas'*)
-# (*PlotLegends-> {'\(CapitalAAcute)ngulo horario' '\(CapitalAAcute)ngulo cenital' 'coseno del \(AAcute)ngulo cenital' '\(CapitalAAcute)ngulo acimutal' '\(CapitalAAcute)ngulo de incidencia con el panel' 'cos(theta_i)' 'cos(theta_i) 2'}*)
+# (*PlotLegends-> {'\(CapitalAAcute)ngulo horario' '\(CapitalAAcute)ngulo anguloCenitalal' 'coseno del \(AAcute)ngulo anguloCenitalal' '\(CapitalAAcute)ngulo acimutal' '\(CapitalAAcute)ngulo de anguloIncidencia con el panel' 'cos(theta_i)' 'cos(theta_i) 2'}*)
 # (*PlotHighlighting->'XSlice'*)
 # (*)*)
 # (*)*)
@@ -47,7 +95,7 @@ horaSalida = anguloSalida/pi * 12;
 # (* ::Input:: *)
 # (*Manipulate(*)
 # (*Block({n=DiasJulianos((mes)) H=Hs((mes))}*)
-# (*Plot({cos(incidencia) incidencia2}{h0 24}*)
+# (*Plot({cos(anguloIncidencia) anguloIncidencia2}{h0 24}*)
 # (*PlotLabel->'comparaci\(OAcute)n'*)
 # (*PlotLegends-> {'cos(theta_i)' 'cos(theta_i) 2'}*)
 # (*PlotHighlighting->'XSlice'*)
@@ -62,27 +110,7 @@ horaSalida = anguloSalida/pi * 12;
 #
 #
 # (* ::Input::Initialization:: *)
-# angulo1=anguloSolar-pi/24;angulo2=anguloSolar+pi/24;
-# IoJ=(12*3600/pi)*SOLAR*excentricidad(cos(latitud)cos(declinacion)(sin(angulo2)-sin(angulo1))+(angulo2-angulo1)sin(latitud)sin(declinacion));
-# Io=IoJ/3600000;
-#
-# a=0.409+0.5016sin(anguloSalida-pi/3); b=0.6609-0.4767sin(anguloSalida-pi/3);
-# rt=pi/24*(a+b*cos(anguloSolar))*(cos(anguloSolar)-cos(anguloSalida))/(sin(anguloSalida)-anguloSalida*cos(anguloSalida));
-# II=H*rt;
-# kT=II/Io;
-# Id =II*Which(kT<=0.221-0.09kTkT<=0.800.9511-0.1604kT+4.388kT^2-16.638kT^3+12.336kT^4True0.165);
-# Ib=II-Id;
-# Rb=cos(incidencia)/cos(cenit);
-# Ibn =Ib/cos(cenit);
-# IT=Ib*Rb+Id*(1+cos(inclinacion))/2;
-# (* Difusa de la gu\(IAcute)a *)
-# HoJ=(24*3600/pi)*SOLAR*excentricidad(cos(latitud)*cos(declinacion)*sin(anguloSalida)+anguloSalida*sin(latitud)sin(declinacion));
-# Ho=HoJ/3600000;
-# KT=H/Ho;
-# fDm=1-1.13KT;
-# Hd=fDm*H;
-#
-#
+
 # (* ::Input:: *)
 # (*Manipulate(*)
 # (*Block({n=DiasJulianos((mes)) H=Hs((mes))}*)
