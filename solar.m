@@ -9,17 +9,14 @@ horaSalida = anguloSalida/pi * 12;
 # Ángulos del sol durante el día
 anguloHorario = (h-12)*(pi/12);
 anguloCenital = acos(
-    cos(latitud) * cos(declinacion) * cos(anguloHorario) + sin(latitud) * sin(declinacion)
+    cos(latitud) .* cos(declinacion) .* cos(anguloHorario) + sin(latitud) .* sin(declinacion)
 );
 acimutSolarParam = abs(acos(
-    (cos(anguloCenital)*sin(latitud)-sin(declinacion))
-    ./(sin(anguloCenital)*cos(latitud))
+    (cos(anguloCenital).*sin(latitud)-sin(declinacion))
+    ./(sin(anguloCenital).*cos(latitud))
 ));
 
-acimutSolar = merge(anguloHorario < 0, -acimutSolarParam, acimutSolarParam);
-# acimutSolar = arrayfun(@(g) anguloHorario < 0 && -g || g, acimutSolarParam);
-
-anguloIncidencia=acos(cos(anguloCenital).*cos(inclinacion)+sin(anguloCenital).*sin(inclinacion).*cos(acimutSolar-acimut));
+acimutSolar = ifelse(anguloHorario < 0, -acimutSolarParam, acimutSolarParam);
 
 # Irradiación
 angulo1 = anguloHorario - pi/24;
@@ -30,35 +27,13 @@ Io=IoJ/3600000;
 a = 0.409 + 0.5016 * sin(anguloSalida-pi/3);
 b = 0.6609 - 0.4767 * sin(anguloSalida-pi/3);
 
-rt = pi/24 * (a + b * cos(anguloHorario)) .* (cos(anguloHorario) - cos(anguloSalida)) / (sin(anguloSalida) - anguloSalida * cos(anguloSalida));
+rt = pi/24 * (a + b * cos(anguloHorario)) .* (cos(anguloHorario) - cos(anguloSalida)) ./ (sin(anguloSalida) - anguloSalida * cos(anguloSalida));
 
-II = H*rt;
+II = H.*rt;
 
-# HoJ = (24 * 3600 / pi) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud) * sin(declinacion));
-# Ho=HoJ/3600000;
-#
-# KT=H/Ho;
-#
-# fDm=1-1.13*KT;
-#
-# Hd=fDm*H;
-# Id = Io * Hd / Ho;
-#
+# pasopaso
+beckman
 
-kT = II/Io;
-Id = II * 0.165
-
-if (kT <= 0.22)
-    Id = II * (1 - 0.09 * kT)
-elseif (kT < 0.8)
-    Id = II * (0.9511 - 0.1604 * kT + 4.388 * kT^2 - 16.638 * kT^3 + 12.336 * kT^4)
-end
-Ib = II - Id;
-
-Rb = cos(anguloIncidencia) / cos(anguloCenital);
-IT = Ib * Rb + Id * (1 + cos(inclinacion)) / 2;
-
-# Ibn = Ib / cos(anguloCenital);
 
 # sin(D) * sin(L) * cos(B))
 # - (sin(D) * cos(L) * sin(B) * cos(gamma))
