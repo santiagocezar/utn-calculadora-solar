@@ -12,10 +12,18 @@ excentricidad = 1+0.033*cos(2*pi*n/365);
 # Ángulo horario de puesta y salida del sol (1.6.10) en radianes
 anguloSalida = acos(-tan(latitud)*tan(declinacion));
 
+# Año fraccionario (1.4.2)
+anioFrac = (n - 1) * 2 * pi / 365
+
+# Ecuación del tiempo (1.5.3)
+ecTiempo = 229.2 * (0.000075 + 0.001868 .* cos(anioFrac) - 0.032077 .* sin(anioFrac) - 0.014615 .* cos(2 .* anioFrac) - 0.04089 .* sin(2 .* anioFrac))
+
+hSolar = (h * 60 + 4 * (zona * pi/12 - longitud) + ecTiempo) / 60
+
 #== Ángulos del sol durante el día ==#
 
 # Ángulo horario centrado en el mediodía
-anguloHorario = (h-12)*(pi/12);
+anguloHorario = (hSolar-12)*(pi/12);
 
 # Ángulo cenital del sol (1.6.5) en radianes
 anguloCenital = acos(

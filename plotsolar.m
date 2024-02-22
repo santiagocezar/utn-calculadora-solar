@@ -10,11 +10,11 @@ function plotstyle(p)
     set(p, 'xtick', 0:2:24);
     # tamaño fuente
     set(p, 'FontName','Noto Sans')
-    set(p, 'FontSize',16)
+    set(p, 'FontSize',8)
     grid on;
 end
 
-function plotmonth(mes)
+function IT = plotirradiacion(h, mes)
     # El día promedio de cada mes
     DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
     # Irradiación mensual promedio (ND) (kWh/m²)
@@ -23,7 +23,7 @@ function plotmonth(mes)
     MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
 
     # Hora del día
-    h = 0:.1:24;
+    # h = 0:.1:24;
 
     H = Hs(mes);
 
@@ -31,7 +31,11 @@ function plotmonth(mes)
     n = DiasJulianos(mes);
 
     # Latitud del lugar (en radianes)
-    latitud = deg2rad(-31);
+    latitud = deg2rad(-31.43);
+    # Longitud del lugar (en radianes)
+    longitud = deg2rad(-62.08);
+    # Diferencia horaria con el GMT (-3 para Argentina, en radianes)
+    zona = -3;
     # Inclinación del panel (positivo, en radianes)
     inclinacion = abs(latitud);
     # Acimut del panel (rotación respecto a un eje normal a la tierra, en radianes)
@@ -51,6 +55,8 @@ function plotmonth(mes)
         230, 69, 83
     ] ./ 255);
 
+    return
+
     # Estilizar gráfico
     plotstyle(gca)
     hold on;
@@ -65,10 +71,11 @@ function plotmonth(mes)
     axis([0 24 0 1.5]);
     legend('I_o', 'I', 'I_T');
     # legend('I_o', 'I', 'K_T', 'I_d', 'I_T');
+
 end
 
 
-function plotmonth12(mes)
+function plotirradiacion12(mes)
     # El día promedio de cada mes
     DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
     # Irradiación mensual promedio (ND) (kWh/m²)
@@ -85,7 +92,7 @@ function plotmonth12(mes)
     MesLabels{mes}
 
     # Latitud del lugar (en radianes)
-    latitud = deg2rad(-31);
+    latitud = deg2rad(-31.43);
     # Inclinación del panel (positivo, en radianes)
     inclinacion = abs(latitud);
     # Acimut del panel (rotación respecto a un eje normal a la tierra, en radianes)
@@ -99,31 +106,30 @@ function plotmonth12(mes)
     Rb
 end
 
-subplot(2,2, 1);
-plotmonth(1);
-subplot(2,2, 2);
-plotmonth(4);
-subplot(2,2, 3);
-plotmonth(7);
-subplot(2,2, 4);
-plotmonth(10);
+ITodo = zeros(24, 12);
+for mes = 1:12
+    ITodo(:,mes) = max(plotirradiacion(0:23, mes), zeros(1, 24));
+end
+ITodo
+dlmwrite(["tablas/todo.csv"], ITodo, ";");
 
-# plotmonth12(1)
-# plotmonth12(2)
-# plotmonth12(3)
-# plotmonth12(4)
-# plotmonth12(5)
-# plotmonth12(6)
-# plotmonth12(7)
-# plotmonth12(8)
-# plotmonth12(9)
-# plotmonth12(10)
-# plotmonth12(11)
-# plotmonth12(12)
+# subplot(2,2, 1);
+# plotirradiacion(0:24, 1);
+# subplot(2,2, 2);
+# plotirradiacion(0:24, 4);
+# subplot(2,2, 3);
+# plotirradiacion(0:24, 7);
+# subplot(2,2, 4);
+# plotirradiacion(0:24, 10);
+
+# plotirradiacion12(1)
+# plotirradiacion12(4)
+# plotirradiacion12(7)
+# plotirradiacion12(12)
+# plotirradiacion12(10)
 
 # anguloHorario
 
-# csvwrite("solar.csv", II.');
 
 #
 # [Io, rt, II, kT, Id, Ib, Rb, IT] =
