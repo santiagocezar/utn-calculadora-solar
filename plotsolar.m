@@ -15,22 +15,32 @@ function plotstyle(p)
 end
 
 function plotmonth(mes)
+    # El día promedio de cada mes
     DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
-    Hs = [7.689, 6.804, 5.714, 4.238, 3.323, 2.821, 2.989, 3.805, 5.167, 6.224, 7.244, 7.541]; # revisar el valor de marzo
+    # Irradiación mensual promedio (ND) (kWh/m²)
+    Hs = [7.689, 6.804, 5.714, 4.238, 3.323, 2.821, 2.989, 3.805, 5.167, 6.224, 7.244, 7.541];
+
     MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
 
+    # Hora del día
     h = 0:.1:24;
+
     H = Hs(mes);
+
+    # Día
     n = DiasJulianos(mes);
 
+    # Latitud del lugar (en radianes)
+    latitud = deg2rad(-31);
+    # Inclinación del panel (positivo, en radianes)
+    inclinacion = abs(latitud);
+    # Acimut del panel (rotación respecto a un eje normal a la tierra, en radianes)
+    acimut = pi;
 
-    # Parámetros que ingresa el usuario
-    latitud=deg2rad(-31); # phi
-    inclinacion=-latitud;    # beta
-    acimut=pi;              # gamma
-
+    # Llama al archivo solar.m
     solar
 
+    # Colorinche (tema de colores Catppuccin)
     set(0, 'defaultAxesColorOrder', [
         30, 102, 245
         210, 15, 57
@@ -41,14 +51,7 @@ function plotmonth(mes)
         230, 69, 83
     ] ./ 255);
 
-    # figure (1);
-    # plot (h, [Rb; Rb_p]);
-    # legend('R_b', 'R_b´');
-
-#     plot (h, [cos(anguloIncidencia); cos(anguloCenital)]);
-#     legend('cos(\theta_i)', 'cos(\theta_z)');
-
-    # figure (2);
+    # Estilizar gráfico
     plotstyle(gca)
     hold on;
     plot (h, [Io; II; IT], 'LineWidth', 2, '');
@@ -66,34 +69,30 @@ end
 
 
 function plotmonth12(mes)
+    # El día promedio de cada mes
     DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
+    # Irradiación mensual promedio (ND) (kWh/m²)
     Hs = [7.689, 6.804, 5.714, 4.238, 3.323, 2.821, 2.989, 3.805, 5.167, 6.224, 7.244, 7.541]; # revisar el valor de marzo
     MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
 
+    # Hora del día
     h = 12;
+
     H = Hs(mes);
+
+    # Día
     n = DiasJulianos(mes);
     MesLabels{mes}
 
-    # Parámetros que ingresa el usuario
-    latitud=deg2rad(-31); # phi
-    inclinacion=-latitud;    # beta
-    acimut=pi;              # gamma
+    # Latitud del lugar (en radianes)
+    latitud = deg2rad(-31);
+    # Inclinación del panel (positivo, en radianes)
+    inclinacion = abs(latitud);
+    # Acimut del panel (rotación respecto a un eje normal a la tierra, en radianes)
+    acimut = pi;
 
+    # Llama al archivo solar.m
     solar
-
-    set(0, 'defaultAxesColorOrder', [
-        30, 102, 245
-        210, 15, 57
-        223, 142, 29
-        136, 57, 239
-        64, 160, 43
-        4, 165, 229
-        230, 69, 83
-    ] ./ 255);
-
-    # figure (1);
-    # plot (h, acimutSolar);
 
     II
     IT

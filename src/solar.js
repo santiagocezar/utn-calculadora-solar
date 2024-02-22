@@ -102,7 +102,7 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
 
     if (P < -1) P = -1 // problemas de precisión
 
-    // sign(...) puede dar 0, lo que causa que se formen picos al mediodía en las formulas siguientes
+    // La función tiene el mismo signo que el ángulo horario, excepto en 0 para asegurar que al operar trigonométricamente el valor sea el mismo que el de los límites por izquiera y por derecha
     const solar_acim = (angl < 0 ? -1 : 1) * abs(acos(P))
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
