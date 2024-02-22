@@ -10,7 +10,7 @@ function plotstyle(p)
     set(p, 'xtick', 0:2:24);
     # tamaño fuente
     set(p, 'FontName','Noto Sans')
-    set(p, 'FontSize',20)
+    set(p, 'FontSize',16)
     grid on;
 end
 
@@ -22,7 +22,7 @@ function plotmonth(mes)
     h = 0:.1:24;
     H = Hs(mes);
     n = DiasJulianos(mes);
-    MesLabels{mes}
+
 
     # Parámetros que ingresa el usuario
     latitud=deg2rad(-31); # phi
@@ -51,14 +51,17 @@ function plotmonth(mes)
     # figure (2);
     plotstyle(gca)
     hold on;
-    plot (h, [Io; II; kT; Id; IT], 'LineWidth', 4, '');
+    plot (h, [Io; II; IT], 'LineWidth', 2, '');
+    title(MesLabels{mes});
+    # plot (h, [Io; II; kT; Id; IT], 'LineWidth', 4, '');
 
     # marcar el medio día
     plot([12 12], ylim, '--');
     hold off;
     # solo mostrar valores los valores positivos
     axis([0 24 0 1.5]);
-    legend('I_o', 'I', 'K_T', 'I_d', 'I_T');
+    legend('I_o', 'I', 'I_T');
+    # legend('I_o', 'I', 'K_T', 'I_d', 'I_T');
 end
 
 
