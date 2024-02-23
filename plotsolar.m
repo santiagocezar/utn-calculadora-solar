@@ -14,7 +14,7 @@ function plotstyle(p)
     grid on;
 end
 
-function IT = plotirradiacion(h, mes)
+function IT = plotirradiacion(h, mes, radio)
     # El día promedio de cada mes
     DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
     # Irradiación mensual promedio (ND) (kWh/m²)
@@ -55,12 +55,14 @@ function IT = plotirradiacion(h, mes)
         230, 69, 83
     ] ./ 255);
 
-    return
+    IT = max(zeros(1, 24), IT);
 
+    # figure(mes)
     # Estilizar gráfico
+    cla(gca);
     plotstyle(gca)
     hold on;
-    plot (h, [Io; II; IT], 'LineWidth', 2, '');
+    plot (h, [IT; radio], 'LineWidth', 2, '');
     title(MesLabels{mes});
     # plot (h, [Io; II; kT; Id; IT], 'LineWidth', 4, '');
 
@@ -69,7 +71,7 @@ function IT = plotirradiacion(h, mes)
     hold off;
     # solo mostrar valores los valores positivos
     axis([0 24 0 1.5]);
-    legend('I_o', 'I', 'I_T');
+    legend('I_T', 'I_T medido');
     # legend('I_o', 'I', 'K_T', 'I_d', 'I_T');
 
 end
@@ -106,21 +108,22 @@ function plotirradiacion12(mes)
     Rb
 end
 
-ITodo = zeros(24, 12);
-for mes = 1:12
-    ITodo(:,mes) = max(plotirradiacion(0:23, mes), zeros(1, 24));
-end
-ITodo
-dlmwrite(["tablas/todo.csv"], ITodo, ";");
+ITR = csvread("tablas/radiometro.csv") ./ 1000;
+ITR(:,1).'
+# ITodo = zeros(24, 12);
+# for mes = 1:12
+#     ITodo(:,mes) = max(plotirradiacion(0:23, mes), zeros(1, 24));
+# end
+# ITodo
+# dlmwrite(["tablas/todo.csv"], ITodo, ";");
 
-# subplot(2,2, 1);
-# plotirradiacion(0:24, 1);
-# subplot(2,2, 2);
-# plotirradiacion(0:24, 4);
-# subplot(2,2, 3);
-# plotirradiacion(0:24, 7);
-# subplot(2,2, 4);
-# plotirradiacion(0:24, 10);
+plotmes = [1 4 7 10]
+
+for i = 1:4
+    mes = plotmes(i)
+    subplot(2,2, i);
+    plotirradiacion(0:23, mes, ITR(:,mes).');
+end
 
 # plotirradiacion12(1)
 # plotirradiacion12(4)
