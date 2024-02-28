@@ -1,27 +1,31 @@
+# Coseno del ángulo de incidencia del sol y el panel (1.6.3) en radianes
+anguloIncidencia = acos(cos(anguloCenital).*cos(inclinacion)+sin(anguloCenital).*sin(inclinacion).*cos(acimutSolar-acimut));
 
-anguloIncidencia = acos(sin(declinacion).*sin(latitud).*cos(inclinacion)
-    -sin(declinacion).*cos(latitud).*sin(inclinacion).*cos(acimutSolar)
-    +cos(declinacion).*cos(latitud).*cos(inclinacion).*cos(anguloHorario)
-    +cos(declinacion).*sin(latitud).*sin(inclinacion).*cos(acimutSolar).*cos(anguloHorario)
-    +cos(declinacion).*sin(acimutSolar).*sin(inclinacion).*sin(anguloHorario));
 
-HoJ = (24 * 3600 / pi) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud) * sin(declinacion));
+# Irradiación díaria en superficie horizontal a tope de atmósfera  (1.10.3) en kWh/m²
 
+# En MJ/m²
+HoJ = (24 * 3600 / pi) .* SOLAR .* excentricidad .* (cos(latitud) .* cos(declinacion) .* sin(anguloSalida) + anguloSalida .* sin(latitud) .* sin(declinacion));
+
+# En kW/m²
 Ho=HoJ/3600000;
 
+# Índice de claridad diario, media mensual (2.9.1)
 KT=H/Ho;
 
+# Irradiación diaria difusa, aproximación lineal, media mensual (ecuación de Page)
 fDm=1-1.13*KT;
-
 Hd=fDm*H;
+
+# Irradiación diaria directa, sección 2.10, es la porción de irradiación total que no es difusa
 Hb=H - Hd;
-
-anguloHorario2 = anguloHorario + pi / 12
-
-Io = (1 / (3.6 * 10**6)) * (12 * 3600 / pi) * SOLAR * excentricidad * ((cos(latitud) * cos(declinacion) * (sin(anguloHorario2) - sin(anguloHorario))) + ((anguloHorario2 - anguloHorario) * sin(latitud) * sin(declinacion)))
 
 Id = Io * Hd / Ho
 
 Ib = II - Id
-Ibn = Ib / cos(anguloCenital);
-IT = Ibn * cos(anguloIncidencia) + Id * (1 + cos(inclinacion)) / 2;
+
+# Razón de la radiación directa en superficie inclinada y horizontal (1.8.1)
+Rb = cos(anguloIncidencia) ./ cos(anguloCenital);
+
+# Irradiación horaria total en superficie inclinada (2.15.1) en kWh/m²
+IT = Ib .* Rb + Id .* (1 + cos(inclinacion)) / 2;

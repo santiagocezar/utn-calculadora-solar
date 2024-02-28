@@ -49,7 +49,7 @@ angulo2 = anguloHorario + pi/24;
 # Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m²
 
 # En MJ/m²
-IoJ = (12 * 3600 / pi) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * (sin(angulo2) - sin(angulo1)) + (angulo2 - angulo1) * sin(latitud) * sin(declinacion));
+IoJ = (12 .* 3600 / pi) .* SOLAR .* excentricidad .* (cos(latitud) .* cos(declinacion) .* (sin(angulo2) - sin(angulo1)) + (angulo2 - angulo1) .* sin(latitud) .* sin(declinacion));
 
 # En kW/m²
 Io=IoJ/3600000;
@@ -58,12 +58,12 @@ Io=IoJ/3600000;
 a = 0.409 + 0.5016 * sin(anguloSalida-pi/3);
 b = 0.6609 - 0.4767 * sin(anguloSalida-pi/3);
 
-rt = pi/24 * (a + b * cos(anguloHorario)) .* (cos(anguloHorario) - cos(anguloSalida)) ./ (sin(anguloSalida) - anguloSalida * cos(anguloSalida));
+rt = pi/24 .* (a + b .* cos(anguloHorario)) .* (cos(anguloHorario) - cos(anguloSalida)) ./ (sin(anguloSalida) - anguloSalida .* cos(anguloSalida));
 
 # Irradiación horaria total en superficie horizontal (2.13.1) en kWh/m²
 II = H.*rt;
 
 
-beckman
+# beckman
 
-#pasopaso
+pasopaso

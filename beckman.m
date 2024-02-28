@@ -18,11 +18,6 @@ Ib = II - Id;
 
 # Razón de la radiación directa en superficie inclinada y horizontal (1.8.1)
 Rb = cos(anguloIncidencia) ./ cos(anguloCenital);
-Rb_p = (
-    cos(latitud+inclinacion).*cos(declinacion).*cos(anguloHorario)+sin(latitud+inclinacion).*sin(declinacion)
-) ./ (
-    cos(latitud).*cos(declinacion).*cos(anguloHorario)+sin(latitud).*sin(declinacion)
-);
 
 # Irradiación horaria total en superficie inclinada (2.15.1) en kWh/m²
 IT = Ib .* Rb + Id .* (1 + cos(inclinacion)) / 2;

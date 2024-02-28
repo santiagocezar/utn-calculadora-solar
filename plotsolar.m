@@ -1,31 +1,16 @@
 clear
 
 
-# mes = 1:12;
-# h=6
-# mes = 5;
-
-function plotstyle(p)
-    # marquitas cada 2 horas
-    set(p, 'xtick', 0:2:24);
-    # tamaño fuente
-    set(p, 'FontName','Noto Sans')
-    set(p, 'FontSize',8)
-    grid on;
-end
-
-function IT = plotirradiacion(h, mes, radio)
+function IT = irradiacionTotal(h, mes)
     # El día promedio de cada mes
     DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
     # Irradiación mensual promedio (ND) (kWh/m²)
     Hs = [7.689, 6.804, 5.714, 4.238, 3.323, 2.821, 2.989, 3.805, 5.167, 6.224, 7.244, 7.541];
 
-    MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
-
     # Hora del día
     # h = 0:.1:24;
 
-    H = Hs(mes);
+    H = Hs(mes)
 
     # Día
     n = DiasJulianos(mes);
@@ -44,6 +29,26 @@ function IT = plotirradiacion(h, mes, radio)
     # Llama al archivo solar.m
     solar
 
+    IT = max(zeros(size(IT)), IT);
+end
+
+
+function plotstyle(p)
+    # marquitas cada 2 horas
+    set(p, 'xtick', 0:2:24);
+    # tamaño fuente
+    set(p, 'FontName','Noto Sans')
+    set(p, 'FontSize',8)
+    grid on;
+end
+
+
+
+function IT = plotirradiacion(h, mes, radio)
+    IT = irradiacionTotal(h, mes);
+
+    MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
+
     # Colorinche (tema de colores Catppuccin)
     set(0, 'defaultAxesColorOrder', [
         30, 102, 245
@@ -54,8 +59,6 @@ function IT = plotirradiacion(h, mes, radio)
         4, 165, 229
         230, 69, 83
     ] ./ 255);
-
-    IT = max(zeros(1, 24), IT);
 
     # figure(mes)
     # Estilizar gráfico
@@ -76,47 +79,32 @@ function IT = plotirradiacion(h, mes, radio)
 
 end
 
+#
+# function plotirradiacion12(mes)
+#     irradiacionTotal(12, mes)
+# end
+#
+# [mes, h] = meshgrid(1:12, 0:23)
+#
+# IT = irradiacionTotal(h, mes)
+#
+# mesh(h, mes, IT)
+# xlabel("Hora")
+# xlabel("Mes")
+# xlabel("I_t")
 
-function plotirradiacion12(mes)
-    # El día promedio de cada mes
-    DiasJulianos = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344];
-    # Irradiación mensual promedio (ND) (kWh/m²)
-    Hs = [7.689, 6.804, 5.714, 4.238, 3.323, 2.821, 2.989, 3.805, 5.167, 6.224, 7.244, 7.541]; # revisar el valor de marzo
-    MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
 
-    # Hora del día
-    h = 12;
 
-    H = Hs(mes);
 
-    # Día
-    n = DiasJulianos(mes);
-    MesLabels{mes}
 
-    # Latitud del lugar (en radianes)
-    latitud = deg2rad(-31.43);
-    # Inclinación del panel (positivo, en radianes)
-    inclinacion = abs(latitud);
-    # Acimut del panel (rotación respecto a un eje normal a la tierra, en radianes)
-    acimut = pi;
-
-    # Llama al archivo solar.m
-    solar
-
-    II
-    IT
-    Rb
-end
-
-ITR = csvread("tablas/radiometro.csv") ./ 1000;
-ITR(:,1).'
 # ITodo = zeros(24, 12);
 # for mes = 1:12
-#     ITodo(:,mes) = max(plotirradiacion(0:23, mes), zeros(1, 24));
+#     ITodo(:,mes) = max(plotirradiacion(0:23, mes, ITR(:,mes).'), zeros(1, 24));
 # end
 # ITodo
 # dlmwrite(["tablas/todo.csv"], ITodo, ";");
 
+ITR = csvread("tablas/radiometro.csv") ./ 1000;
 plotmes = [1 4 7 10]
 
 for i = 1:4
