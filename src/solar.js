@@ -16,57 +16,23 @@ const DIAS_JULIANOS = [
 ]
 
 /* * * * * * * * * * * * * * * * * * * * *
- * Irradiación mensual promedio (Atlas ) (kWh/m²) *
- * * * * * * * * * * * * * * * * * * * * */
-export const H_atlas = [
-    6,5.5,4.5,3.5,3,2,2.5,3,4,5.5,6,6.5
-]
-
-/* * * * * * * * * * * * * * * * * * * * *
  * Irradiación mensual promedio (ND) (kWh/m²) *
  * * * * * * * * * * * * * * * * * * * * */
-export const H = [
-    7.689,
-    6.804,
-    5.714,
-    4.238,
-    3.323,
-    2.821,
-    2.989,
-    3.805,
-    5.167,
-    6.224,
-    7.244,
-    7.541,
-]
-
-/* * * * * * * * * * * * * * * * * * * * *
- * Irradiación mensual promedio (GH) (kWh/m²) *
- * * * * * * * * * * * * * * * * * * * * */
-export const H_GH = [
-    7.947,
-    6.882,
-    6.19,
-    4.792,
-    4.462,
-    3.881,
-    4.154,
-    4.24,
-    5.674,
-    5.996,
-    7.019,
-    6.959,
+export const Hs = [
+    7.689, 6.804, 5.714, 4.238, 3.323, 2.821, 2.989, 3.805, 5.167, 6.224, 7.244, 7.541
 ]
 
 /**
- * @param {number} lati Latitud del lugar (en radianes)
+ * @param {number} latitud Latitud del lugar (en radianes)
+ * @param {number} long Longitud del lugar (en radianes)
+ * @param {number} zona Diferencia horaria con el GMT (-3 para Argentina)
  * @param {number} incl Inclinación del panel (en radianes)
  * @param {number} acim Acimut del panel (en radianes)
- * @param {number} hora Hora del día (de 0 a 24)
+ * @param {number} h Hora del día (de 0 a 24)
  * @param {number} mes Índice del mes (enero es 0, diciembre es 11)
  */
-export function irradiacion_total(lati, incl, acim, hora, mes) {
-    const angl = (hora - 12) * PI / 12
+export function irradiacion_total(latitud, long, zona, incl, acim, h, mes) {
+    const H = Hs[mes]
 
     /* * * * * * * * * * * * * * * * * * * * * * *
      * n: Día juliano para tal mes (Tabla 1.6.1) *
@@ -75,48 +41,10 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const n = DIAS_JULIANOS[mes]
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * decl: Posición angular del sol respecto al plano del ecuador (1.6.1a) en radianes *
+     * declinacion: Posición angular del sol respecto al plano del ecuador (1.6.1a) en radianes *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const decl = (23.45 * PI / 180) * sin(2 * PI * (284 + n) /365)
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * hora_salida: Ángulo horario de puesta y salida del sol (1.6.10) en radianes *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const angl_salida = acos(-tan(decl)*tan(lati))
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * cenit: Ángulo cenital del sol (1.6.5) en radianes *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const cos_cenit = cos(lati) * cos(decl) * cos(angl) + sin(lati) * sin(decl)
-    const cenit = acos(cos_cenit)
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * solar_acim: Ángulo acimutal del sol (1.6.6) en radianes *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    let P = (cos_cenit * sin(lati) - sin(decl))
-        / (sin(cenit) * cos(lati))
-
-    if (P < -1) P = -1 // problemas de precisión
-
-    // La función tiene el mismo signo que el ángulo horario, excepto en 0 para asegurar que al operar trigonométricamente el valor sea el mismo que el de los límites por izquiera y por derecha
-    const solar_acim = (angl < 0 ? -1 : 1) * abs(acos(P))
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * cos_incid: Coseno del ángulo de incidencia del sol y el panel (1.6.3) en radianes *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const cos_incid = cos_cenit * cos(incl) + sin(cenit) * sin (incl) * cos(solar_acim - acim)
-    const incid = acos(cos_incid)
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * R_b: Razón de la radiación directa en superficie inclinada y horizontal (1.8.1) *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const R_b = cos_incid / cos_cenit
+    const declinacion = (23.45 * PI / 180) * sin(2 * PI * (284 + n) /365) //
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * exce: La distancia de la tierra al sol en AU (1.4.1*) *
@@ -126,55 +54,111 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
      * En la review de Maleki (energies), usa un factor de 0.0033, citando al artículo de Beckman.
      * Esto debe ser un error, porque en el artículo se usa un valor 0.033, así que tomamos eso
      */
-    const exce = 1 + 0.033 * cos(2 * PI * n / 365)
+    const excentricidad = 1 + 0.033 * cos(2 * PI * n / 365)
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * hora_salida: Ángulo horario de puesta y salida del sol (1.6.10) en radianes *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const anguloSalida = acos(-tan(latitud)*tan(declinacion))
+
+    /* * * * * * * * * * * * * * * * * * * *
+     * anio_frac: Año fraccionario (1.4.2) *
+     * * * * * * * * * * * * * * * * * * * */
+    const anioFrac = (n - 1) * 2 * PI / 365
+
+    /* * * * * * * * * * * * * * * * * * * *
+     * ec_tiempo: Año fraccionario (1.4.2) *
+     * * * * * * * * * * * * * * * * * * * */
+    const ecTiempo = 229.2 * (0.000075 + 0.001868 * cos(anioFrac) - 0.032077 * sin(anioFrac) - 0.014615 * cos(2 * anioFrac) - 0.04089 * sin(2 * anioFrac))
+
+    // Hora solar
+    const hSolar = (h * 60 + 4 * (zona * PI/12 - long) + ecTiempo) / 60 - .5
+
+
+    /* * * * * * * * * * * * * * * * * * * * * *
+     * Ángulo horario centrado en el mediodía  *
+     * * * * * * * * * * * * * * * * * * * * * */
+    const anguloHorario = (hSolar - 12) * (PI / 12)
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * cenit: Ángulo cenital del sol (1.6.5) en radianes *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const cosAnguloCenital = cos(latitud) * cos(declinacion) * cos(anguloHorario) + sin(latitud) * sin(declinacion)
+    const anguloCenital = acos(cosAnguloCenital)
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * solar_acim: Ángulo acimutal del sol (1.6.6) en radianes *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    let acimutSolarParam = (cosAnguloCenital * sin(latitud) - sin(declinacion))
+        / (sin(anguloCenital) * cos(latitud))
+
+    if (acimutSolarParam < -1) acimutSolarParam = -1 // problemas de precisión
+
+    // La función tiene el mismo signo que el ángulo horario, excepto en 0 para asegurar que al operar trigonométricamente el valor sea el mismo que el de los límites por izquiera y por derecha
+    const acimutSolar = (anguloHorario < 0 ? -1 : 1) * abs(acos(acimutSolarParam))
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Io: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    // Equivalente en radianes de un intervalo de 1 hora simétrico,
+    const angulo1 = anguloHorario - PI / 24;
+    const angulo2 = anguloHorario + PI / 24;
+
+    // En MJ/m²
+    const IoJ = (12 * 3600 / PI) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * (sin(angulo2) - sin(angulo1)) + (angulo2 - angulo1) * sin(latitud) * sin(declinacion));
+
+    // En kW/m²
+    const Io = IoJ / 3600000
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * r_t: Razón entre la radiación total horaria y diaria (2.13.2) *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const a = 0.409 + 0.5016 * sin(anguloSalida - PI/3)
+    const b = 0.6609 - 0.4767 * sin(anguloSalida - PI/3)
+
+    const r_t = PI/24 * (a + b * cos(anguloHorario)) * (cos(anguloHorario) - cos(anguloSalida)) / (sin(anguloSalida) - anguloSalida * cos(anguloSalida))
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * cos_incid: Coseno del ángulo de incidencia del sol y el panel (1.6.3) en radianes *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const cos_incid = cosAnguloCenital * cos(incl) + sin(anguloCenital) * sin (incl) * cos(acimutSolar - acim)
+    const incid = acos(cos_incid)
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * R_b: Razón de la radiación directa en superficie inclinada y horizontal (1.8.1) *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const R_b = cos_incid / cosAnguloCenital
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * H_o: Irradiación diaria en superficie horizontal a tope de atmósfera (1.10.3) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     // en J/m²
-    const H_o_joules = (24 * 3600 / PI) * SOLAR * exce
-        * (cos(lati) * cos(decl) * sin(angl_salida) + angl_salida * sin(lati)* sin(decl))
+    const H_o_joules = (24 * 3600 / PI) * SOLAR * excentricidad
+        * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud)* sin(declinacion))
 
     // convertido a kWh/m²
     const H_o = H_o_joules / 3600000
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * I_o: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    // Equivalente en radianes de un intervalo de 1 hora simétrico,
-    const angl_1 = angl - PI / 24;
-    const angl_2 = angl + PI / 24;
-
-    // MJ/m²
-    const I_o_joules = (12 * 3600 / PI) * SOLAR * exce
-        * (cos(lati) * cos(decl) * (sin(angl_2) - sin(angl_1)) + (angl_2 - angl_1) * sin(lati) * sin(decl))
-
-    // kW/m²
-    const I_o = I_o_joules / 3600000
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * r_t: Razón entre la radiación total horaria y diaria (2.13.2) *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const a = 0.409 + 0.5016 * sin(angl_salida - PI/3)
-    const b = 0.6609 - 0.4767 * sin(angl_salida - PI/3)
-
-    const r_t = PI/24 * (a + b * cos(angl)) *
-        (cos(angl) - cos(angl_salida)) / (sin(angl_salida) - angl_salida * cos(angl_salida))
 
     /* * * * * * * * * * * * * * * * * * * * * *
      * I: Irradiación total en superficie horizontal (2.13.1) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * */
 
-    const I = H[mes] * r_t
+    const I = H * r_t
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * *
      * k_T: Índice de claridad horario (2.9.3) *
      * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const k_T = I / I_o
+    const k_T = I / Io
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_d: Irradiación horaria difusa (2.10.1) en kWh/m² *
@@ -205,5 +189,5 @@ export function irradiacion_total(lati, incl, acim, hora, mes) {
     const I_T = (beam + diffuse) // * 4/3
 
     return {
-        angl, n, decl, hora_salida: angl_salida, solar_acim, cos_cenit, cenit, cos_incid, incid, R_b, exce, H_o, angl_2, angl_1, I_o, b, a, r_t, I, k_T, I_d_param, I_d, I_b, I_T}
+        angl: anguloHorario, n, decl: declinacion, hora_salida: anguloSalida, solar_acim: acimutSolar, cos_cenit: cosAnguloCenital, cenit: anguloCenital, cos_incid, incid, R_b, exce: excentricidad, H_o, angl_2: angulo2, angl_1: angulo1, I_o: Io, b, a, r_t, I, k_T, I_d_param, I_d, I_b, I_T}
 }
