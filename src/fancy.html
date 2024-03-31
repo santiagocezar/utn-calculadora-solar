@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="/css/reset.css">
+	<script type="importmap">
+    {
+        "imports": {
+            "chart.js": "/node_modules/chart.js/dist/chart.js",
+            "@kurkle/color": "/node_modules/.pnpm/@kurkle+color@0.3.2/node_modules/@kurkle/color/dist/color.esm.js"
+        }
+    }
+	</script>
+	<style>
+	* {
+        box-sizing: border-box;
+    }
+	:root {
+        --sun-size: 20%;
+        height: 100%;
+	}
+
+	body {
+        height: 100%;
+	}
+
+	@keyframes cycle {
+        0% {
+        }
+        100% {
+            transform: rotate(180deg);
+        }
+	}
+	#skybox {
+        position: relative;
+        max-height: 100%;
+        max-width: 100%;
+        aspect-ratio: 2/1;
+/*         background: linear-gradient(to top, gray, white); */
+	}
+
+	#sun-aguja {
+        position: absolute;
+        left: calc(var(--sun-size) / 4);
+        bottom: calc(var(--sun-size) / 2);
+        width: calc(50% - var(--sun-size) / 4);
+        height: calc(var(--sun-size) / 2);
+/*         background: linear-gradient(to top, yellow, orange); */
+/*         animation: 3s linear 0s cycle infinite; */
+        transform-origin: bottom right;
+        mix-blend-mode: overlay;
+
+	}
+
+	#sun {
+/*         transform: translate(-50%, -50%); */
+        height: 200%;
+        aspect-ratio: 1/1;
+/*         animation: 3s linear 0s cycle infinite; */
+
+/*         background-color: lightyellow; */
+        background-image: radial-gradient(closest-side, lightyellow, yellow 25%, transparent);
+/*         border-radius: 100%; */
+	}
+	.panels {
+        gap: 1rem;
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 2fr 1fr;
+        height: 100%;
+        background-color: skyblue;
+	}
+	.factura, .controles {
+        background-color: white;
+	}
+	.factura {
+        grid-row: span 2;
+	}
+
+    /* The slider itself */
+    .estacion {
+        -webkit-appearance: none;  /* Override default CSS styles */
+        appearance: none;
+/*         width: 100%; /* Full-width */
+        height: 2rem; /* Specified height */
+        background-image: linear-gradient(to right, orangered, yellowgreen, steelblue, violet, orangered); /* Grey background */
+        border-radius: 2rem;
+        outline: none;
+        padding: 0 .25rem;
+    }
+
+
+    .estacion::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 1.5rem;
+        background: white;
+    }
+
+    .estacion::-moz-range-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        border: none;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 1.5rem;
+        background: white;
+    }
+	</style>
+</head>
+<body>
+<div class="panels">
+    <div id="skybox">
+        <div id="sun-aguja">
+            <div id="sun"></div>
+        </div>
+    </div>
+    <div class="factura">
+        <h1>Factura</h1>
+        <p>
+        Irradiación directa normal:
+        <span id="valor"></span>
+        </p>
+        <p>
+        Hora:
+        <span id="hora"></span>
+        </p>
+        <p>
+        Total Mensual:
+        <span id="mens"></span>
+        </p>
+    </div>
+    <div class="controles">
+    <label>
+        <span>Mes</span>
+        <input class="estacion" type="range" value="1" min="1" max="12" id="mes">
+    </label>
+    </div>
+</div>
+<script src="/horario_solar_input.js" type="module"></script>
+</body>
+</html>

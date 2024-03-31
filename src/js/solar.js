@@ -26,12 +26,12 @@ export const Hs = [
  * @param {number} latitud Latitud del lugar (en radianes)
  * @param {number} long Longitud del lugar (en radianes)
  * @param {number} zona Diferencia horaria con el GMT (-3 para Argentina)
- * @param {number} incl Inclinación del panel (en radianes)
- * @param {number} acim Acimut del panel (en radianes)
+ * @param {number} inclinacion Inclinación del panel (en radianes)
+ * @param {number} acimut Acimut del panel (en radianes)
  * @param {number} h Hora del día (de 0 a 24)
  * @param {number} mes Índice del mes (enero es 0, diciembre es 11)
  */
-export function irradiacion_total(latitud, long, zona, incl, acim, h, mes) {
+export function irradiacionTotal(latitud, long, zona, inclinacion, acimut, h, mes) {
     const H = Hs[mes]
 
     /* * * * * * * * * * * * * * * * * * * * * * *
@@ -73,7 +73,7 @@ export function irradiacion_total(latitud, long, zona, incl, acim, h, mes) {
     const ecTiempo = 229.2 * (0.000075 + 0.001868 * cos(anioFrac) - 0.032077 * sin(anioFrac) - 0.014615 * cos(2 * anioFrac) - 0.04089 * sin(2 * anioFrac))
 
     // Hora solar
-    const hSolar = (h * 60 + 4 * (zona * PI/12 - long) + ecTiempo) / 60 - .5
+    const hSolar = (h * 60 + 4 * (zona * PI/12 - long) + ecTiempo) / 60 - .5 //TODO: revisar esto
 
 
     /* * * * * * * * * * * * * * * * * * * * * *
@@ -121,73 +121,67 @@ export function irradiacion_total(latitud, long, zona, incl, acim, h, mes) {
     const a = 0.409 + 0.5016 * sin(anguloSalida - PI/3)
     const b = 0.6609 - 0.4767 * sin(anguloSalida - PI/3)
 
-    const r_t = PI/24 * (a + b * cos(anguloHorario)) * (cos(anguloHorario) - cos(anguloSalida)) / (sin(anguloSalida) - anguloSalida * cos(anguloSalida))
-
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * cos_incid: Coseno del ángulo de incidencia del sol y el panel (1.6.3) en radianes *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const cos_incid = cosAnguloCenital * cos(incl) + sin(anguloCenital) * sin (incl) * cos(acimutSolar - acim)
-    const incid = acos(cos_incid)
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * R_b: Razón de la radiación directa en superficie inclinada y horizontal (1.8.1) *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const R_b = cos_incid / cosAnguloCenital
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * H_o: Irradiación diaria en superficie horizontal a tope de atmósfera (1.10.3) en kWh/m² *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    // en J/m²
-    const H_o_joules = (24 * 3600 / PI) * SOLAR * excentricidad
-        * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud)* sin(declinacion))
-
-    // convertido a kWh/m²
-    const H_o = H_o_joules / 3600000
+    const rt = PI/24 * (a + b * cos(anguloHorario)) * (cos(anguloHorario) - cos(anguloSalida)) / (sin(anguloSalida) - anguloSalida * cos(anguloSalida))
 
     /* * * * * * * * * * * * * * * * * * * * * *
      * I: Irradiación total en superficie horizontal (2.13.1) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * */
 
-    const I = H * r_t
+    const II = H * rt
 
-    /* * * * * * * * * * * * * * * * * * * * * * * * * *
-     * k_T: Índice de claridad horario (2.9.3) *
-     * * * * * * * * * * * * * * * * * * * * * * * * * */
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * cos_incid: Coseno del ángulo de incidencia del sol y el panel (1.6.3) en radianes *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const k_T = I / Io
+    const anguloIncidencia = acos(cos(anguloCenital) * cos(inclinacion) + sin(anguloCenital) * sin(inclinacion) * cos(acimutSolar - acimut));
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * H_o: Irradiación diaria en superficie horizontal a tope de atmósfera (1.10.3) en kWh/m² *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    // En MJ/m²
+    const HoJ = (24 * 3600 / PI) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud) * sin(declinacion));
+
+    // En kW/m²
+    const Ho = HoJ / 3600000
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * I_d: Irradiación horaria difusa (2.10.1) en kWh/m² *
+     * KT: Índice de claridad diario, media mensual (2.9.1)  *
      * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const I_d_param = (
-        k_T <= 0.22 ?
-            1 - 0.09 * k_T
-        :
-        k_T <= 0.80 ?
-            0.9511 - 0.1604 * k_T + 4.388 * pow(k_T, 2)
-            - 16.638 * pow(k_T, 3) + 12.336 * pow(k_T, 4)
-        :
-        0.165
-    )
+    const KT = H/Ho;
 
-    const I_d = I_d_param * I
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Hd: Índice de claridad diario, media mensual (2.9.1)  *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const fDm = 1-1.13 * KT;
+    const Hd = fDm * H;
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Id: Irradiación horaria difusa (2.10.1) en kWh/m² *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    //TODO: arreglar referencia
+    const Id = Io * Hd / Ho
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * R_b: Razón de la radiación directa en superficie inclinada y horizontal (1.8.1) *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const Rb = cos(anguloIncidencia) / cosAnguloCenital
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * I_T: Irradiación horaria total (2.15.1) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    const I_b = I - I_d
+    const Ib = II - Id
 
-    const beam = I_b * R_b
-    const diffuse = I_d * (1+cos(incl)) / 2
+    const beam = Ib * Rb
+    const diffuse = Id * (1+cos(inclinacion)) / 2
 
-    const I_T = (beam + diffuse) // * 4/3
+    const IT = (beam + diffuse) // * 4/3
 
     return {
-        angl: anguloHorario, n, decl: declinacion, hora_salida: anguloSalida, solar_acim: acimutSolar, cos_cenit: cosAnguloCenital, cenit: anguloCenital, cos_incid, incid, R_b, exce: excentricidad, H_o, angl_2: angulo2, angl_1: angulo1, I_o: Io, b, a, r_t, I, k_T, I_d_param, I_d, I_b, I_T}
+        anguloHorario, n, declinacion, anguloSalida, acimutSolar, cosAnguloCenital, anguloCenital, anguloIncidencia, Rb, excentricidad, Ho, angulo2, angulo1, Io, b, a, II, KT, Id, Ib, IT}
 }

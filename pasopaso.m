@@ -17,9 +17,6 @@ KT=H/Ho;
 fDm=1-1.13*KT;
 Hd=fDm*H;
 
-# Irradiación diaria directa, sección 2.10, es la porción de irradiación total que no es difusa
-Hb=H - Hd;
-
 Id = Io * Hd / Ho
 
 Ib = II - Id
