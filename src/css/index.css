@@ -54,6 +54,10 @@ label input {
     flex-grow: 1;
 }
 
+.submit-wrapper {
+    flex-basis: 100%;
+}
+
 button[type="submit"] {
     background-color: aquamarine;
 
@@ -62,7 +66,11 @@ button[type="submit"] {
     border-radius: 4px;
     box-shadow: hsl(160deg 100% 50%) 0 -2px 8px inset;
 
-    padding: .5rem 0;
+    padding: .5rem 2rem;
 
-        flex-basis: 100%;
+    outline: none !important;
+}
+button[type="submit"]:focus {
+    border-color: royalblue;
+    box-shadow: hsl(160deg 100% 80%) 0 -2px 8px inset;
 }
