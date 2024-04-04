@@ -96,7 +96,7 @@ function IT = plotirradiacion(h, mes, radio)
 end
 
 
-function plotgeneracion(h, mes)
+function W = plotgeneracion(h, mes)
     [IT, W] = generada(h, mes);
 
     MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
@@ -130,30 +130,33 @@ function plotgeneracion(h, mes)
     # legend('I_o', 'I', 'K_T', 'I_d', 'I_T');
 
 end
-#
-# function plotirradiacion12(mes)
-#     irradiacionTotal(12, mes)
-# end
-#
-# [mes, h] = meshgrid(1:12, 0:23)
-#
-# IT = irradiacionTotal(h, mes)
-#
-# mesh(h, mes, IT)
-# xlabel("Hora")
-# xlabel("Mes")
-# xlabel("I_t")
 
+function plotirradiacion12(mes)
+    irradiacionTotal(12, mes)
+end
 
+function graficar3D()
+    [mes, h] = meshgrid(1:12, 0:23)
 
+    IT = irradiacionTotal(h, mes)
 
+    mesh(h, mes, IT)
+    xlabel("Hora")
+    xlabel("Mes")
+    xlabel("I_t")
+end
 
-# ITodo = zeros(24, 12);
-# for mes = 1:12
-#     ITodo(:,mes) = max(plotirradiacion(0:23, mes, ITR(:,mes).'), zeros(1, 24));
-# end
-# ITodo
-# dlmwrite(["tablas/todo.csv"], ITodo, ";");
+function exportarCSVElectricidad()
+    WTodo = zeros(24, 12);
+    for mes = 1:12
+        [IT, W] = generada(0:23, mes)
+        WTodo(:,mes) = max(W, zeros(1, 24));
+    end
+    WTodo
+    dlmwrite(["tablas/todo.csv"], WTodo, ";");
+end
+
+exportarCSVElectricidad
 #
 # ITR = csvread("tablas/radiometro.csv") ./ 1000;
 # plotmes = [2 5 8 11]
@@ -164,11 +167,11 @@ end
 #     plotirradiacion(0:23, mes, ITR(:,mes).');
 # end
 
-plotmes = [2 5 8 11]
-
-
-[IT, W] = generada(0:23, 1);
-sum(W)
+# plotmes = [2 5 8 11]
+#
+#
+# [IT, W] = generada(0:23, 1);
+# sum(W)
 
 # for i = 1:4
 #     mes = plotmes(i)

@@ -1,9 +1,0 @@
-{
-    "type":"module",
-    "scripts": {
-        "serve": "python -m http.server -d src"
-    },
-    "dependencies": {
-        "chart.js":"^4.4.0"
-    }
-}

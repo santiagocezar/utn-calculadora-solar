@@ -1,2 +1,2 @@
 serve:
-    python -m http.server -d src
+    pnpm run -C www dev

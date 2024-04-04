@@ -8,16 +8,16 @@ anguloIncidencia = acos(cos(anguloCenital).*cos(inclinacion)+sin(anguloCenital).
 HoJ = (24 * 3600 / pi) .* SOLAR .* excentricidad .* (cos(latitud) .* cos(declinacion) .* sin(anguloSalida) + anguloSalida .* sin(latitud) .* sin(declinacion));
 
 # En kW/m²
-Ho=HoJ/3600000;
+Ho=HoJ./3600000;
 
 # Índice de claridad diario, media mensual (2.9.1)
-KT=H/Ho;
+KT=H./Ho;
 
 # Irradiación diaria difusa, aproximación lineal, media mensual (ecuación de Page)
-fDm=1-1.13*KT;
-Hd=fDm*H;
+fDm=1-1.13.*KT;
+Hd=fDm.*H;
 
-Id = Io * Hd / Ho
+Id = Io .* Hd ./ Ho
 
 Ib = II - Id
 

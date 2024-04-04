@@ -1,4 +1,5 @@
-node_modules
 *.xlsx
-decifrando_excel.txt
+**/*.xlsx
+octave/tablas/decifrando_excel.txt
 Bibliografía
+.direnv

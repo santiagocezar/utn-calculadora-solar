@@ -129,6 +129,7 @@ export function plotEverything() {
     }
 
     new Chart(chartEl(), {
+        id: "solar",
         type: 'line',
         data: {
             datasets: [

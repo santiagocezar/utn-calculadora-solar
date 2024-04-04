@@ -37,21 +37,35 @@ label::after {
     opacity: .75;
 }
 
-label:has(input:focus) {
+label:has(input:focus),
+label:has(textarea:focus){
     border-color: royalblue;
 }
 label span {
     flex-basis: 100%;
     font-size: .75rem;
+    height: 1rem;
     padding: 0 .5rem;
     opacity: .75;
 }
 
-label input {
+label input,
+label textarea,
+label select {
     outline: none !important;
     background-color: transparent;
     padding: 0 .5rem;
     flex-grow: 1;
+}
+label textarea {
+    height: 6rem;
+    resize: none;
+    background: none;
+}
+label select {
+    margin-top: -1rem;
+    padding-top: 1rem;
+    z-index: 2
 }
 
 .submit-wrapper {
@@ -73,4 +87,11 @@ button[type="submit"] {
 button[type="submit"]:focus {
     border-color: royalblue;
     box-shadow: hsl(160deg 100% 80%) 0 -2px 8px inset;
+}
+
+.chart-wrapper {
+    position: relative;
+    margin: 0 auto;
+    width: 40rem;
+    height: 25rem;
 }
