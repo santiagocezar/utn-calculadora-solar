@@ -1,9 +1,19 @@
-import { irradiacionTotal } from './solar.js'
+import { irradiacionTotal, valoresMensuales } from './solar'
 
 import {Chart, registerables} from 'chart.js'
 
 Chart.register(...registerables)
 
+const monthName = (m: number) => new Date(2000, m, 1).toLocaleString(undefined, {month: "long"})
+
+const addChart = (parent: HTMLElement) => {
+    const chartWrapper = document.createElement("div")
+    chartWrapper.className = "chart-wrapper"
+    const canvas = document.createElement("canvas")
+    chartWrapper.appendChild(canvas)
+    parent.appendChild(chartWrapper)
+    return canvas
+}
 
 class SolarForm extends HTMLElement {
     latitud: number;
@@ -18,8 +28,10 @@ class SolarForm extends HTMLElement {
     eficienciaInversor: number;
 
     form: HTMLFormElement | null = null
-    plot: HTMLCanvasElement | null = null
-    previousChart: Chart | null = null
+    hourlyPlot: HTMLCanvasElement | null = null
+    monthlyPlot: HTMLCanvasElement | null = null
+    hourlyChart: Chart | null = null
+    monthlyChart: Chart | null = null
 
     convertirDatos() {
         const data = new FormData(this.form!)
@@ -44,11 +56,11 @@ class SolarForm extends HTMLElement {
 
     connectedCallback() {
         this.form = this.getElementsByTagName("form")[0]
-        const chartWrapper = document.createElement("div")
-        chartWrapper.className = "chart-wrapper"
-        this.plot = document.createElement("canvas")
-        chartWrapper.appendChild(this.plot)
-        this.appendChild(chartWrapper)
+        const chartGroup = document.createElement("div")
+        chartGroup.className = "chart-group"
+        this.hourlyPlot = addChart(chartGroup)
+        this.monthlyPlot = addChart(chartGroup)
+        this.appendChild(chartGroup)
 
         this.form.addEventListener("submit", ev => {
             ev.preventDefault()
@@ -68,34 +80,74 @@ class SolarForm extends HTMLElement {
 
         const factorGeneracion = superficieTotal * this.eficienciaPanel * this.eficienciaInversor * eficienciaInstalacion
 
-        const ejeX: number[] = []
-        for (let h = 0; h < 24; h++) ejeX.push(h)
+        const ejeHoras: number[] = []
+        const ejeMeses: number[] = []
+        for (let h = 0; h < 24; h++) ejeHoras.push(h)
+        for (let m = 0; m < 12; m++) ejeMeses.push(m)
 
-        const generacionTotal = ejeX.map(h => (
-            // TODO: evitar recalcular todas las variables independientes de la hora
+        const mensuales = valoresMensuales(this.latitud, this.mes)
+        const generacionTotalHoraria = ejeHoras.map(h => (
             irradiacionTotal(
-                this.latitud, this.longitud, this.zona, this.inclinacion, this.acimut, h, this.mes
+                this.latitud, this.longitud, this.zona, this.inclinacion, this.acimut, h, mensuales
+            ).IT * factorGeneracion
+        ))
+
+        const generacionTotalMensual = ejeMeses.map(m => (
+            irradiacionTotal(
+                this.latitud, this.longitud, this.zona, this.inclinacion, this.acimut, 12, valoresMensuales(this.latitud, m)
             ).IT * factorGeneracion
         ))
 
         // tomar un máximo teórico para la ubicación para que se note la diferencia entre los meses
-        const maximoVerano = irradiacionTotal(
-            this.latitud, this.longitud, this.zona, this.inclinacion, this.acimut, 12, 0
-        ).IT * factorGeneracion * 1.2 // un poquito más por las dudas
+        const maximoVerano = generacionTotalMensual[0] * 1.2 // un poquito más por las dudas
 
-        if (this.previousChart) this.previousChart.destroy()
-        this.previousChart = new Chart(this.plot!, {
+        if (this.monthlyChart) this.monthlyChart.destroy()
+        if (this.hourlyChart) this.hourlyChart.destroy()
+
+        this.hourlyChart = new Chart(this.hourlyPlot!, {
             type: 'bar',
             data: {
-                labels: ejeX,
+                labels: ejeHoras,
                 datasets: [{
                     label: "kWh generados",
-                    data: generacionTotal,
+                    data: generacionTotalHoraria,
                     borderWidth: 1,
                 }],
             },
             options: {
                 responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Irradiación total a lo largo de un día promedio del mes de ${monthName(this.mes)}`
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                        max: maximoVerano,
+                    }
+                }
+            }
+        })
+        this.monthlyChart = new Chart(this.monthlyPlot!, {
+            type: 'bar',
+            data: {
+                labels: ejeMeses.map(monthName),
+                datasets: [{
+                    label: "kWh generados",
+                    data: generacionTotalMensual,
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Irradiación total al mediodía a lo largo de todo el año"
+                    }
+                },
                 scales: {
                     y: {
                         min: 0,
@@ -106,4 +158,5 @@ class SolarForm extends HTMLElement {
         })
     }
 }
+
 customElements.define("solar-form", SolarForm)

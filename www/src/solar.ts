@@ -23,15 +23,9 @@ export const Hs = [
 ]
 
 /**
- * @param {number} latitud Latitud del lugar (en radianes)
- * @param {number} long Longitud del lugar (en radianes)
- * @param {number} zona Diferencia horaria con el GMT (-3 para Argentina)
- * @param {number} inclinacion Inclinación del panel (en radianes)
- * @param {number} acimut Acimut del panel (en radianes)
- * @param {number} h Hora del día (de 0 a 24)
- * @param {number} mes Índice del mes (enero es 0, diciembre es 11)
+ * @param mes enero es 0, diciembre es 11
  */
-export function irradiacionTotal(latitud, long, zona, inclinacion, acimut, h, mes) {
+export function valoresMensuales(latitud: number, mes: number) {
     const H = Hs[mes]
 
     /* * * * * * * * * * * * * * * * * * * * * * *
@@ -72,9 +66,63 @@ export function irradiacionTotal(latitud, long, zona, inclinacion, acimut, h, me
      * * * * * * * * * * * * * * * * * * * */
     const ecTiempo = 229.2 * (0.000075 + 0.001868 * cos(anioFrac) - 0.032077 * sin(anioFrac) - 0.014615 * cos(2 * anioFrac) - 0.04089 * sin(2 * anioFrac))
 
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * H_o: Irradiación diaria en superficie horizontal a tope de atmósfera (1.10.3) en kWh/m² *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    // En MJ/m²
+    const HoJ = (24 * 3600 / PI) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud) * sin(declinacion));
+
+    // En kW/m²
+    const Ho = HoJ / 3600000
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * KT: Índice de claridad diario, media mensual (2.9.1)  *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const KT = H/Ho;
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Hd: Índice de claridad diario, media mensual (2.9.1)  *
+     * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    const fDm = 1-1.13 * KT;
+    const Hd = fDm * H;
+
+    return {
+        ecTiempo,
+        declinacion,
+        excentricidad,
+        anguloSalida,
+        H,
+        Hd,
+        Ho,
+    }
+}
+
+type Mensuales = ReturnType<typeof valoresMensuales>
+
+/**
+ * @param {number} latitud Latitud del lugar (en radianes)
+ * @param {number} long Longitud del lugar (en radianes)
+ * @param {number} zona Diferencia horaria con el GMT (-3 para Argentina)
+ * @param {number} inclinacion Inclinación del panel (en radianes)
+ * @param {number} acimut Acimut del panel (en radianes)
+ * @param {number} h Hora del día (de 0 a 24)
+ * @param {Mensuales} mes Parámetros mensuales
+ */
+export function irradiacionTotal(latitud: number, long: number, zona: number, inclinacion: number, acimut: number, h: number, {
+    ecTiempo,
+    declinacion,
+    excentricidad,
+    anguloSalida,
+    H,
+    Hd,
+    Ho,
+}: Mensuales) {
+
     // Hora solar
     const hSolar = (h * 60 + 4 * (zona * PI/12 - long) + ecTiempo) / 60 - .5 //TODO: revisar esto
-
 
     /* * * * * * * * * * * * * * * * * * * * * *
      * Ángulo horario centrado en el mediodía  *
@@ -135,29 +183,6 @@ export function irradiacionTotal(latitud, long, zona, inclinacion, acimut, h, me
 
     const anguloIncidencia = acos(cos(anguloCenital) * cos(inclinacion) + sin(anguloCenital) * sin(inclinacion) * cos(acimutSolar - acimut));
 
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * H_o: Irradiación diaria en superficie horizontal a tope de atmósfera (1.10.3) en kWh/m² *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    // En MJ/m²
-    const HoJ = (24 * 3600 / PI) * SOLAR * excentricidad * (cos(latitud) * cos(declinacion) * sin(anguloSalida) + anguloSalida * sin(latitud) * sin(declinacion));
-
-    // En kW/m²
-    const Ho = HoJ / 3600000
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * KT: Índice de claridad diario, media mensual (2.9.1)  *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const KT = H/Ho;
-
-    /* * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * Hd: Índice de claridad diario, media mensual (2.9.1)  *
-     * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-    const fDm = 1-1.13 * KT;
-    const Hd = fDm * H;
-
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Id: Irradiación horaria difusa (2.10.1) en kWh/m² *
      * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -183,5 +208,5 @@ export function irradiacionTotal(latitud, long, zona, inclinacion, acimut, h, me
     const IT = (beam + diffuse) // * 4/3
 
     return {
-        anguloHorario, n, declinacion, anguloSalida, acimutSolar, cosAnguloCenital, anguloCenital, anguloIncidencia, Rb, excentricidad, Ho, angulo2, angulo1, Io, b, a, II, KT, Id, Ib, IT}
+        anguloHorario, declinacion, anguloSalida, acimutSolar, cosAnguloCenital, anguloCenital, anguloIncidencia, Rb, excentricidad, Ho, angulo2, angulo1, Io, b, a, II, Id, Ib, IT}
 }

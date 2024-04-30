@@ -89,9 +89,14 @@ button[type="submit"]:focus {
     box-shadow: hsl(160deg 100% 80%) 0 -2px 8px inset;
 }
 
+.chart-group {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .chart-wrapper {
     position: relative;
-    margin: 0 auto;
-    width: 40rem;
+    flex-basis: 40rem;
+    flex-grow: 1;
     height: 25rem;
 }
