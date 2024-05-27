@@ -22,9 +22,9 @@ function IT = irradiacionTotal(h, mes)
     # Diferencia horaria con el GMT (-3 para Argentina)
     zona = -3;
     # Inclinación del panel (positivo, en radianes)
-    inclinacion = abs(latitud);
+    inclinacion = latitud;
     # Acimut del panel (rotación respecto a un eje normal a la tierra, en radianes)
-    acimut = pi;
+    acimut = 0;
 
     # Llama al archivo solar.m
     solar
@@ -156,7 +156,7 @@ function exportarCSVElectricidad()
     dlmwrite(["tablas/todo.csv"], WTodo, ";");
 end
 
-exportarCSVElectricidad
+# exportarCSVElectricidad
 #
 # ITR = csvread("tablas/radiometro.csv") ./ 1000;
 # plotmes = [2 5 8 11]
@@ -167,17 +167,17 @@ exportarCSVElectricidad
 #     plotirradiacion(0:23, mes, ITR(:,mes).');
 # end
 
-# plotmes = [2 5 8 11]
-#
-#
-# [IT, W] = generada(0:23, 1);
-# sum(W)
+plotmes = [2 5 8 11]
 
-# for i = 1:4
-#     mes = plotmes(i)
-#     subplot(2,2, i);
-#     plotgeneracion(0:23, mes);
-# end
+
+[IT, W] = generada(0:23, 1);
+sum(W)
+
+for i = 1:4
+    mes = plotmes(i)
+    subplot(2,2, i);
+    plotgeneracion(0:23, mes);
+end
 
 # plotirradiacion12(1)
 # plotirradiacion12(4)
