@@ -1,14 +1,11 @@
-<!doctype html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Calculadora Solar - Prototipo EMCI</title>
-	<link rel="stylesheet" href="/css/reset.css">
-	<link rel="stylesheet" href="/css/index.css">
-</head>
-<body>
-<script src="../lib/form.ts"></script>
-<h1>Calculadora Biomasa - Modo técnico</h1>
+---
+import Layout from '../layouts/Default.astro';
+---
+
+<Layout title="Calculadora Solar - Prototipo EMCI">
+
+<script src="../lib/biomasa.ts"></script>
+<h1>Calculadora Solar - Modo técnico</h1>
 <solar-form>
     <form>
         <fieldset>
@@ -78,5 +75,5 @@
         </div>
     </form>
 </solar-form>
-</body>
-</html>
+
+</Layout>

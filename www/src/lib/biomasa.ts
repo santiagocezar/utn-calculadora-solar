@@ -16,14 +16,69 @@ const MATERIALES = {
 // https://www.tutiempo.net/meteorologia/ecuaciones.html#2
 // https://docs.vaisala.com/r/M212417ES-G/es-ES/GUID-4A85CA9F-5E9F-4B22-BD03-454653BE904D
 
-function W_(presionAtmosferica, presionVapor) {
-  var humedadAbsoluta = 0.62198 * presionVapor / (presionAtmosferica - presionVapor);
-  return humedadAbsoluta
+function presionEnAltitud(altura: number){
+  if (altura < -500 || altura > 11000) throw new Error('Valor')
+
+  return 1013.25 * Math.pow(1 - 0.0000225577 * altura, 5.2559);
 }
-function entalpia(humedadAbsoluta, tempBulboSeco) {
-  var h = 1.006 * tempBulboSeco + humedadEspecifica * (2501 + 1.86 * tempBulboSeco);
+
+function presionVaporDeSaturación(tempBulboSeco: number) {
+  if (tempBulboSeco < -60 || tempBulboSeco > 200) throw new Error('La temperatura tiene que estar entre -60ºC y 200ºC');
+
+  // Temperatura en kelvin
+  const tK = tempBulboSeco + 273.15;
+
+  if (tempBulboSeco >= 0) {
+    // Presión de vapor acuoso de agua a temperatura t [Pa]
+    const b_1 = -5800.2206;
+    const b0 = 1.3914993;
+    const b1 = -0.048640239;
+    const b2 = 0.000041764768;
+    const b3 = -1.4452093e-8;
+    const b4 = 6.5459673;
+    return Math.round(
+      Math.exp(
+        b_1 / tK + b0 + b1 * tK + b2 * tK * tK + b3 * tK * tK * tK + b4 * Math.log(tK)
+      )
+    )
+  } else {
+    // Presión de vapor acuoso de hielo a temperatura t [Pa]
+    const a0 = -5674.5359;
+    const a1 = 6.3925247;
+    const a2 = -0.009677843;
+    const a3 = 6.2215701e-7;
+    const a4 = 2.0747825e-9;
+    const a5 = -9.484024e-13;
+    const a6 = 4.1635019;
+    return Math.round(
+      100 * Math.exp(
+        a0 / tK + a1 + a2 * tK + a3 * tK * tK + a4 * tK * tK * tK + a5 * tK * tK * tK * tK + a6 * Math.log(tK)
+      )
+    ) / 100
+  }
+}
+function presionVapor(tempBulboSeco: number, humedadRelativa: number) {
+  var Psat = presionVaporDeSaturación(tempBulboSeco);
+  var presionVapor = humedadRelativa * Psat / 100;
+  return presionVapor
+}
+function humedadAbsoluta(presionAtmosferica: number, presionVapor: number) {
+  var w = 0.62198 * presionVapor / (presionAtmosferica - presionVapor);
+  return w
+}
+function entalpia(ratioVaporAire: number, tempBulboSeco: number) {
+  var h = 1.006 * tempBulboSeco + ratioVaporAire * (2501 + 1.86 * tempBulboSeco);
   return h
 }
+function deltaEntalpia(humedadRelativa: number, tempBulboSeco1: number, tempBulboSeco2: number) {
+  const Patm = presionEnAltitud(0);
+  const omega = humedadAbsoluta(Patm, presionVapor(tempBulboSeco1, humedadRelativa)) / 1000;
+  return entalpia(omega, tempBulboSeco2) - entalpia(omega, tempBulboSeco1);
+}
+
+console.log(deltaEntalpia(60, 12, 20))
+
+
 /**
  * Resistencia térmica del aire
  * @param supInt        resistencia térmica superficial interior (m²K/W)
