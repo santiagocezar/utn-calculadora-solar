@@ -70,8 +70,8 @@ function entalpia(ratioVaporAire: number, tempBulboSeco: number) {
   var h = 1.006 * tempBulboSeco + ratioVaporAire * (2501 + 1.86 * tempBulboSeco);
   return h
 }
-function deltaEntalpia(humedadRelativa: number, tempBulboSeco1: number, tempBulboSeco2: number) {
-  const Patm = presionEnAltitud(0);
+export function deltaEntalpia(humedadRelativa: number, tempBulboSeco1: number, tempBulboSeco2: number) {
+  const Patm = presionEnAltitud(104);
   const omega = humedadAbsoluta(Patm, presionVapor(tempBulboSeco1, humedadRelativa)) / 1000;
   return entalpia(omega, tempBulboSeco2) - entalpia(omega, tempBulboSeco1);
 }
