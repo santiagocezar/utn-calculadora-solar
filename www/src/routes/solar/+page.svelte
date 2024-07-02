@@ -1,8 +1,10 @@
 ---
 import Layout from '../layouts/Default.astro';
 ---
+<svelte:head>
+<title>Calculadora Solar - Prototipo EMCI</title>
+</svelte:head>
 
-<Layout title="Calculadora Solar - Prototipo EMCI">
 
 <script src="../lib/form.ts"></script>
 <h1>Calculadora Solar - Modo técnico</h1>
