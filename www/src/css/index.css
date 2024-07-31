@@ -8,7 +8,7 @@ h1 {
 
 #form {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: .5em;
     justify-content: start;
     align-items: start;

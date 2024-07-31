@@ -1,3 +1,80 @@
+import * as f from './functional'
+
+/*
+const HABITACIONES = [
+  [3.0, 2.5, 2.6], // dormitorio
+  [4.5, 4.0, 2.6], // cocina - comedor
+  [2.0, 1.5, 2.6], // baño
+  [1.0, .82, 2.6], // hall acceso
+]
+*/
+enum Limite {
+  Pared, Puerta, Ventana
+}
+
+/** 
+ * Resistencia térmica de un elemento constructivo
+ * @param supInt        resistencia térmica superficial interior (m²K/W)
+ * @param supExt        resistencia térmica superficial exterior (m²K/W)
+ * @param supASup       resistencia térmica total de superficie a superficie (m²K /W)
+ * @param recubrimiento capas extra, su espesor en metros y conductividad en (W/mK)
+ */
+const resistenciaTermica = (
+  supInt: number,
+  supExt: number,
+  supASup: number,
+  recubrimiento: [espesor: number, conductividad: number][],
+) => (
+  supInt + supExt + supASup +
+  recubrimiento
+  .map(([espesor, conductividad]) => espesor / conductividad)
+  .reduce(sum)
+)
+
+// Valores obtenidos de IRAM-11601 (2002)
+const transmitancias = {
+  [Limite.Pared]: 1 / resistenciaTermica(
+    0.13, 0.04, // Tabla 2
+    0.22, // Tabla A.2 (Hormigón)
+  [],
+  ),
+  [Limite.Puerta]: 1, // Ni idea...
+  [Limite.Ventana]: 5.00, // Tabla A.5 (Vidrio incoloro común con cortinas) internas
+}
+
+function perdidaCondConv(t1: number, t2: number) {
+  const ancho = 8, largo = 5.52, alto = 2.60
+  
+  const aperturas: [Limite, number, number][] = [
+    [Limite.Puerta,  0.90, 2.05], // Puerta exterior
+    [Limite.Puerta,  0.80, 2.05], // Puerta ventana exterior
+    [Limite.Ventana, 1.00, 2.05], // Ventana dormitorio (exterior)
+    [Limite.Ventana, 0.60, 1.10], // Ventana cocina (exterior)
+    [Limite.Ventana, 0.60, 1.25], // Ventana baño (exterior)
+    [Limite.Ventana, 2.50, 2.05], // Ventana Living doble hoja (exterior)
+  ]
+  
+  const aperturaConAreas = aperturas
+    .map(([tipo, ancho, alto]) => [tipo, ancho * alto]  [const])
+  
+    const a = aperturaConAreas.map(f.get(1))
+  const areaParedes = 2 * (ancho + largo) * alto
+    - aperturaConAreas
+      .map(f.get(1))
+      .reduce(f.sum)
+  
+  const deltaT = t2 - t1
+  return deltaT * (
+    areaParedes * transmitancias[Limite.Pared]
+    + aperturaConAreas
+      .map(([tipo, area]) => area * transmitancias[tipo])
+      .reduce(f.sum)
+  )
+}
+
+
+
+
 const K = 273.15
 
 /**
@@ -101,7 +178,6 @@ export function calorCalefaccion(
 // NO USADO
 
 
-const sum = (a, b, _i) => a + b
 
 // TODO: Si se usa solo para ΔT no debería hacer falta convertir a K, pero bueno, no hace daño
 const T_INVIERNO_PROMEDIO = 5 + K; //TODO: preguntar que valor va
@@ -119,26 +195,6 @@ const MATERIALES = {
 // https://docs.vaisala.com/r/M212417ES-G/es-ES/GUID-4A85CA9F-5E9F-4B22-BD03-454653BE904D
 
 console.log(deltaEntalpia(presionEnAltitud(104), 60, 12, 20))
-
-
-/**
- * Resistencia térmica del aire
- * @param supInt        resistencia térmica superficial interior (m²K/W)
- * @param supExt        resistencia térmica superficial exterior (m²K/W)
- * @param supASup       resistencia térmica total de superficie a superficie (m²K /W)
- * @param recubrimiento capas extra, su espesor en metros y conductividad en (W/mK)
- */
-const resistenciaTermicaAire = (
-  supInt: number,
-  supExt: number,
-  supASup: number,
-  recubrimiento: [espesor: number, conductividad: number][],
-) => (
-  supInt + supExt + supASup +
-    recubrimiento
-      .map(([espesor, conductividad]) => espesor / conductividad)
-      .reduce(sum)
-)
 
 const calorConduccionConveccion = (
   resistenciaTermica: number,
