@@ -33,18 +33,18 @@ function IT = irradiacionTotal(h, mes)
 
 end
 
-function [IT, W] = generada(h, mes)
+function [IT, W] = generada(h, mes, superficie)
     IT = irradiacionTotal(h, mes);
 
-    cantidadPaneles = 12
-    superficiePorPanel = 1.653*0.992
+    # cantidadPaneles = 1 # 12
+    # superficiePorPanel = 3.57 # 1.653*0.992
 
-    eficienciaPanel = .142
-    eficienciaInversor = .95
+    eficienciaPanel = .1515 # .142
+    eficienciaInversor = .98 # .95
 
     eficienciaInstalacion = .90
 
-    superficie = cantidadPaneles * superficiePorPanel
+    # superficie = cantidadPaneles * superficiePorPanel
 
     W = IT * superficie * eficienciaPanel * eficienciaInversor * eficienciaInstalacion
 end
@@ -97,7 +97,7 @@ end
 
 
 function W = plotgeneracion(h, mes)
-    [IT, W] = generada(h, mes);
+    [IT, W] = generada(h, mes, 1.64);
 
     MesLabels = {'Enero'; 'Febrero'; 'Marzo'; 'Abril'; 'Mayo'; 'Junio'; 'Julio'; 'Agosto'; 'Septiembre'; 'Octubre'; 'Noviembre'; 'Diciembre'};
 
@@ -117,7 +117,7 @@ function W = plotgeneracion(h, mes)
     cla(gca);
     plotstyle(gca)
     hold on;
-    plot (h, [W; IT], 'LineWidth', 2, '');
+    plot (h, [W], 'LineWidth', 2, '');
     title(MesLabels{mes});
     # plot (h, [Io; II; kT; Id; IT], 'LineWidth', 4, '');
 
@@ -125,8 +125,8 @@ function W = plotgeneracion(h, mes)
     plot([12 12], ylim, '--');
     hold off;
     # solo mostrar valores los valores positivos
-    axis([0 24 0 3]);
-    legend('Generada', 'I_T');
+    axis([0 24 0 .3]);
+    legend('Generada');
     # legend('I_o', 'I', 'K_T', 'I_d', 'I_T');
 
 end
@@ -146,17 +146,34 @@ function graficar3D()
     xlabel("I_t")
 end
 
-function exportarCSVElectricidad()
+function exportarCSVElectricidad(superficie)
     WTodo = zeros(24, 12);
     for mes = 1:12
-        [IT, W] = generada(0:23, mes)
+        [IT, W] = generada(0:23, mes, superficie)
         WTodo(:,mes) = max(W, zeros(1, 24));
     end
-    WTodo
-    dlmwrite(["tablas/todo.csv"], WTodo, ";");
+    max(WTodo)
+    dlmwrite(["tablas/generado-" num2str(superficie) "m².csv"], WTodo * 1000, ";");
 end
 
-# exportarCSVElectricidad
+function exportarCSVNormalizado(mul)
+    WTodo = zeros(24, 12);
+    for mes = 1:12
+        [IT, W] = generada(0:23, mes, 1)
+        WTodo(:,mes) = max(W, zeros(1, 24));
+    end
+
+    tope = max(max(WTodo))
+
+    dlmwrite(["tablas/generado-" num2str(mul) "W.csv"], WTodo ./ tope .* mul, ";");
+end
+
+
+for s = [500 900 1500 3000 5000]
+    exportarCSVNormalizado(s)
+end
+
+
 #
 # ITR = csvread("tablas/radiometro.csv") ./ 1000;
 # plotmes = [2 5 8 11]
@@ -167,17 +184,17 @@ end
 #     plotirradiacion(0:23, mes, ITR(:,mes).');
 # end
 
-plotmes = [2 5 8 11]
+# plotmes = [2 5 8 11]
 
 
-[IT, W] = generada(0:23, 1);
-sum(W)
+# [IT, W] = generada(0:23, 1);
+# sum(W)
 
-for i = 1:4
-    mes = plotmes(i)
-    subplot(2,2, i);
-    plotgeneracion(0:23, mes);
-end
+# for i = 1:4
+#     mes = plotmes(i)
+#     subplot(2,2, i);
+#     plotgeneracion(0:23, mes);
+# end
 
 # plotirradiacion12(1)
 # plotirradiacion12(4)

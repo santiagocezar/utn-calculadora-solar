@@ -18,8 +18,8 @@ anioFrac = (n - 1) * 2 * pi / 365
 # Ecuación del tiempo (1.5.3)
 ecTiempo = 229.2 * (0.000075 + 0.001868 .* cos(anioFrac) - 0.032077 .* sin(anioFrac) - 0.014615 .* cos(2 .* anioFrac) - 0.04089 .* sin(2 .* anioFrac))
 
-# hSolar = (h * 60 + 4 * (zona * pi/12 - longitud) + ecTiempo) / 60 - .5
-hSolar = h
+hSolar = (h * 60 + 4 * (zona * pi/12 - longitud) + ecTiempo) / 60 - .5
+# hSolar = h
 
 #== Ángulos del sol durante el día ==#
 
