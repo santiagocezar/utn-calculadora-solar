@@ -14,6 +14,7 @@ const addChart = (parent: HTMLElement) => {
     parent.appendChild(chartWrapper)
     return canvas
 }
+// -
 
 class SolarForm extends HTMLElement {
     latitud: number;

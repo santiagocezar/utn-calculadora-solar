@@ -102,6 +102,10 @@ export function valoresMensuales(latitud: number, mes: number) {
 
 type Mensuales = ReturnType<typeof valoresMensuales>
 
+export function horaSolar(h: number, long: number, zona: number, ecTiempo: number): number {
+    return (h * 60 + 4 * (zona * PI/12 - long) + ecTiempo) / 60 - .5 //TODO: revisar esto
+}
+
 /**
  * @param {number} latitud Latitud del lugar (en radianes)
  * @param {number} long Longitud del lugar (en radianes)
@@ -111,7 +115,7 @@ type Mensuales = ReturnType<typeof valoresMensuales>
  * @param {number} h Hora del día (de 0 a 24)
  * @param {Mensuales} mes Parámetros mensuales
  */
-export function irradiacionTotal(latitud: number, long: number, zona: number, inclinacion: number, acimut: number, h: number, {
+export function irradiacionTotal(latitud: number, inclinacion: number, acimut: number, h: number, {
     ecTiempo,
     declinacion,
     excentricidad,
@@ -120,14 +124,10 @@ export function irradiacionTotal(latitud: number, long: number, zona: number, in
     Hd,
     Ho,
 }: Mensuales) {
-
-    // Hora solar
-    const hSolar = (h * 60 + 4 * (zona * PI/12 - long) + ecTiempo) / 60 - .5 //TODO: revisar esto
-
     /* * * * * * * * * * * * * * * * * * * * * *
      * Ángulo horario centrado en el mediodía  *
      * * * * * * * * * * * * * * * * * * * * * */
-    const anguloHorario = (hSolar - 12) * (PI / 12)
+    const anguloHorario = (h - 12) * (PI / 12)
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * *
      * cenit: Ángulo cenital del sol (1.6.5) en radianes *
