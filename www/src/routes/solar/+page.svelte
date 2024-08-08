@@ -1,4 +1,7 @@
 <script lang="ts">
+    import Label from '$lib/components/Label.svelte';
+    import NumberInput from '$lib/components/NumberInput.svelte';
+    import SelectInput from '$lib/components/SelectInput.svelte';
 import { horaSolar, irradiacionTotal, valoresMensuales } from '$lib/solar'
 import {Chart, registerables} from 'chart.js'
 
@@ -124,7 +127,7 @@ $effect (() => {
 })
 
     // tomar un máximo teórico para la ubicación para que se note la diferencia entre los meses
-    const maximoVerano = generacionTotalMensual[0] * 1.2 // un poquito más por las dudas
+    const maximoVerano = Math.max(...generacionTotalMensual) * 1.2 // un poquito más por las dudas
 
     hourlyChart!.data.datasets[0].data = generacionTotalHoraria
     monthlyChart!.data.datasets[0].data = generacionTotalMensual
@@ -148,65 +151,70 @@ $effect (() => {
 <div id="form">
     <fieldset>
         <legend>Espacio y tiempo</legend>
-        <label data-suffix="°">
-            <span>Latitud</span>
-            <input bind:value={latitudDeg} type="number">
-        </label>
-        <label data-suffix="°">
-            <span>Longitud</span>
-            <input bind:value={longitudDeg} type="number">
-        </label>
-        <label>
-            <span>Huso horario</span>
-            <input bind:value={zona} type="number">
-        </label>
-        <label for="select">
-            <span>Mes</span>
-            <select bind:value={mesString} id="select">
-                <option value="0">Enero</option>
-                <option value="1">Febrero</option>
-                <option value="2">Marzo</option>
-                <option value="3">Abril</option>
-                <option value="4">Mayo</option>
-                <option value="5">Junio</option>
-                <option value="6">Julio</option>
-                <option value="7">Agosto</option>
-                <option value="8">Septiembre</option>
-                <option value="9">Octubre</option>
-                <option value="10">Noviembre</option>
-                <option value="11">Diciembre</option>
-            </select>
-        </label>
+        <NumberInput
+            label="Latitud"
+            bind:value={latitudDeg} 
+            unit="°" step={0.1} 
+            min={-90} max={90}
+        />
+        <NumberInput
+            label="Longitud"
+            bind:value={longitudDeg} 
+            unit="°" step={0.1} 
+            min={-180} max={180}
+        />
+        <NumberInput
+            label="Huso horario"
+            bind:value={zona} 
+            min={-12} max={12}
+        />
+        <SelectInput
+            label="Mes"
+            bind:value={mesString} 
+        >
+            <option value="0" selected>Enero</option>
+            <option value="1">Febrero</option>
+            <option value="2">Marzo</option>
+            <option value="3">Abril</option>
+            <option value="4">Mayo</option>
+            <option value="5">Junio</option>
+            <option value="6">Julio</option>
+            <option value="7">Agosto</option>
+            <option value="8">Septiembre</option>
+            <option value="9">Octubre</option>
+            <option value="10">Noviembre</option>
+            <option value="11">Diciembre</option>
+        </SelectInput>
     </fieldset>
     <fieldset>
         <legend>Disposición de los paneles</legend>
-        <label data-suffix="°">
-            <span>Inclinación</span>
-            <input bind:value={inclinacionDeg} type="number">
-        </label>
-        <label data-suffix="°">
-            <span>Ángulo acimutal</span>
-            <input bind:value={acimutDeg} type="number">
-        </label>
-        <label>
-            <span>Cantidad de paneles</span>
-            <input bind:value={cantidad} type="number">
-        </label>
-        <label data-suffix="m²">
-            <span>Superficie del panel</span>
-            <input value={superficie} type="text">
-        </label>
+        <NumberInput
+            label="Inclinación"
+            bind:value={inclinacionDeg} unit="°" min={0} max={90}
+        />
+        <NumberInput
+            label="Ángulo acimutal"
+            bind:value={acimutDeg} unit="°" min={-180} max={180}
+        />
+        <NumberInput
+            label="Cantidad de paneles"
+            bind:value={cantidad} min={0} max={100}
+        />
+        <NumberInput
+            label="Superficie del panel"
+            bind:value={superficie} unit="m²" step={0.01} min={0} max={1000}
+        />
     </fieldset>
     <fieldset>
         <legend>Eficiencia eléctrica</legend>
-        <label data-suffix="%">
-            <span>Eficiencia de los paneles</span>
-            <input bind:value={eficienciaPanel100} type="number">
-        </label>
-        <label data-suffix="%">
-            <span>Eficiencia del inversor</span>
-            <input bind:value={eficienciaInversor100} type="number">
-        </label>
+        <NumberInput
+            label="Eficiencia de los paneles"
+            bind:value={eficienciaPanel100} unit="%" step={0.01} min={0} max={100}
+        />
+        <NumberInput
+            label="Eficiencia del inversor"
+            bind:value={eficienciaInversor100} unit="%" step={0.01} min={0} max={100}
+        />
     </fieldset>
 </div>
 <div class="chart-group">

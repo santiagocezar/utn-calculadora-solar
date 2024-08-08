@@ -49,69 +49,6 @@ fieldset {
     }
 }
 
-label {
-    border: 1px solid #ccd;
-    border-top-width: 2px;
-    background-color: #fff;
-    border-radius: 4px;
-    --shadow: #f0f0fa 0 2px 8px inset;
-    box-shadow: var(--shadow);
-
-    display: grid;
-    grid-template-columns: 1fr auto;
-    height: 3rem;
-    
-    &::after {
-        content: attr(data-suffix);
-        padding: 0 .5rem;
-        opacity: .75;
-    }
-
-    &:focus-within {
-        border-color: rgb(33 118 245);
-        box-shadow: var(--shadow), 0 0 2px 2px rgb(33 118 245 / 50%);
-    }
-    
-    span {
-        flex-basis: 100%;
-        font-size: .75rem;
-        height: 1rem;
-        padding: 0 .5rem;
-        opacity: .75;
-        grid-column: span 2;
-    }
-
-    input,
-    textarea,
-    select {
-        outline: none !important;
-        background-color: transparent;
-        padding: 0 .5rem;
-        width: 100%;
-    }
-    textarea {
-        height: 6rem;
-        resize: none;
-        background: none;
-    }
-    select {
-        margin-top: -1rem;
-        padding-top: 1rem;
-        z-index: 2;
-        grid-column: span 2;
-    }
-    
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-    input[type="number"] {
-        -moz-appearance: textfield;
-    }
-}
-
-
 
 
 .submit-wrapper {
