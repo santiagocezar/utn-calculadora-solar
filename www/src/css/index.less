@@ -1,6 +1,18 @@
 @lite-shadow: 0 2px 8px #f0f0fa;
 @top-shiny: 0 1px 0 1px var(--shine, #fff) inset;
 
+.card {
+    --color: #f1f1ff;
+    --border: color-mix(in lch, black 20%, var(--color));
+    --bevel: color-mix(in lch, black 5%, var(--color));
+    --shine: color-mix(in lch, white 60%, var(--color));
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    background-color: var(--color);
+    border-radius: .5rem;
+    box-shadow: @lite-shadow, @top-shiny;
+}
+
 :root {
     --border: #ccc;
     font-family: 'Inter', sans-serif;
@@ -27,16 +39,12 @@ header {
 }
 
 fieldset {
+    .card;
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding-top: .5rem;
-    border: 1px solid #ccd;
-    border-bottom-width: 2px;
-    background-color: #f1f1ff;
     padding: .25rem .75rem .75rem .75rem;
-    border-radius: .5rem;
-    box-shadow: @lite-shadow, @top-shiny;
     flex: 1 0 20rem;
     max-width: 20rem;
 
