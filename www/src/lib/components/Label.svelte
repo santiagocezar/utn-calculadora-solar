@@ -4,20 +4,23 @@
 
     interface Props {
         text: string;
+        tts?: string;
         for?: string;
         children: Snippet;
     }
 
-    let { text: label, for: for_, children }: Props = $props() 
+    let { text: label, tts, for: for_, children }: Props = $props()
 </script>
 
-<label for={for_}>
-    <span>{label}</span>
+<div class="labeled">
+    <label for={for_} aria-label={tts ?? label}>
+        <span aria-hidden="true">{label}</span>
+    </label>
     {@render children()}
-</label>
+</div>
 
 <style lang="less">
-label {
+.labeled {
     display: grid;
     grid-template: 
         "label" auto
@@ -29,6 +32,7 @@ label {
     border-top-width: 2px;
     background-color: #fff;
     border-radius: 4px;
+    overflow: hidden;
 
     --shadow: #f0f0fa 0 2px 8px inset;
     box-shadow: var(--shadow);
@@ -38,14 +42,16 @@ label {
         box-shadow: var(--shadow), 0 0 2px 2px rgb(33 118 245 / 50%);
     }
     
-    span {
+    label {
         user-select: none;
         grid-area: label;
         flex-basis: 100%;
+        align-self: center;
         font-size: .75rem;
         height: 1rem;
         padding: 0 .5rem;
         opacity: .75;
+        pointer-events: none;
     }
 
     :global(input),
@@ -61,6 +67,5 @@ label {
     //     resize: none;
     //     background: none;
     // }
-    
 }
 </style>

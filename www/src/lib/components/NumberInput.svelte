@@ -1,10 +1,24 @@
+<script context="module">
+    let counter = 0
+</script>
 <script lang="ts">
     import Label from "./Label.svelte";
+
+    const unitName = {
+        "msquared": "{} en metros cuadrados",
+        "degrees": "{} en grados",
+        "percentage": "porcentaje de {}",
+    }
+    const unitSym: typeof unitName = {
+        "msquared": "m²",
+        "degrees": "°",
+        "percentage": "%",
+    }
 
     interface Props {
         label: string;
         prefix?: string;
-        unit?: string;
+        unit?: keyof (typeof unitName);
         step?: number;
         min?: number;
         max?: number;
@@ -14,17 +28,25 @@
     let {
         label, prefix, unit, step, min, max, value = $bindable()
     }: Props = $props() 
+
+    let fullLabel = unit ? unitName[unit].replace("{}", label) : label;
+
+    let progress = $derived((value - min) / (max - min));
+
+    const id = "number-input-" + (counter ++)
 </script>
 
-<Label text={label}>
-    <!-- <input bind:value={value} {min} {max} {step} type="range"> -->
+<Label text={label} tts={fullLabel} for={id}>
+    <input aria-hidden="true" tabindex="-1" bind:value={value} {min} {max} {step} type="range">
+    <div class="progress" style="--progress: {progress}">
+    </div>
     <div>
         {#if prefix}
             <span>{prefix}</span>
         {/if}
-        <input bind:value={value} {min} {max} {step} type="number">
+        <input {id} bind:value={value} {min} {max} {step} type="number">
         {#if unit}
-            <span>{unit}</span>
+            <span aria-hidden="true">{unit}</span>
         {/if}
     </div>
 </Label>
@@ -48,13 +70,21 @@
         -moz-appearance: textfield;
         appearance: textfield;
     }
-    /*
+
+    .progress {
+        grid-area: label;
+        width: calc(var(--progress) * 100%);
+        background-color: #eeeeff;
+        pointer-events: none;
+        border-radius: 0 4px 4px 0;
+        border-right: 2px solid #ddddf4;
+    }
     input[type="range"] {
         grid-area: label;
         -webkit-appearance: none;
         appearance: none;
         background: transparent;
-        cursor: pointer;
+        cursor: ew-resize;
         width: 100%;
         padding: 0;
 
@@ -69,11 +99,6 @@
         &::-moz-range-thumb {
             visibility: hidden;
         }
-        &::-moz-range-progress {
-            background-color: red;
-            height: 100%;
-
-        }
     }
-    */
+
 </style>

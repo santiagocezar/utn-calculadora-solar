@@ -154,13 +154,13 @@ $effect (() => {
         <NumberInput
             label="Latitud"
             bind:value={latitudDeg} 
-            unit="°" step={0.1} 
+            unit="degrees" step={0.1}
             min={-90} max={90}
         />
         <NumberInput
             label="Longitud"
             bind:value={longitudDeg} 
-            unit="°" step={0.1} 
+            unit="degrees" step={0.1}
             min={-180} max={180}
         />
         <NumberInput
@@ -190,11 +190,11 @@ $effect (() => {
         <legend>Disposición de los paneles</legend>
         <NumberInput
             label="Inclinación"
-            bind:value={inclinacionDeg} unit="°" min={0} max={90}
+            bind:value={inclinacionDeg} unit="degrees" min={0} max={90}
         />
         <NumberInput
             label="Ángulo acimutal"
-            bind:value={acimutDeg} unit="°" min={-180} max={180}
+            bind:value={acimutDeg} unit="degrees" min={-180} max={180}
         />
         <NumberInput
             label="Cantidad de paneles"
@@ -202,18 +202,18 @@ $effect (() => {
         />
         <NumberInput
             label="Superficie del panel"
-            bind:value={superficie} unit="m²" step={0.01} min={0} max={1000}
+            bind:value={superficie} unit="msquared" step={0.01} min={0} max={1000}
         />
     </fieldset>
     <fieldset>
         <legend>Eficiencia eléctrica</legend>
         <NumberInput
             label="Eficiencia de los paneles"
-            bind:value={eficienciaPanel100} unit="%" step={0.01} min={0} max={100}
+            bind:value={eficienciaPanel100} unit="percentage" step={0.01} min={0} max={100}
         />
         <NumberInput
             label="Eficiencia del inversor"
-            bind:value={eficienciaInversor100} unit="%" step={0.01} min={0} max={100}
+            bind:value={eficienciaInversor100} unit="percentage" step={0.01} min={0} max={100}
         />
     </fieldset>
 </div>

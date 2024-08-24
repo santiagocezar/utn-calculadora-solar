@@ -26,9 +26,8 @@
     
 <style lang="less">
     select {
-        margin-top: -1rem;
-        padding-top: 1rem;
         z-index: 2;
-        grid-column: span 2;
+        grid-area: input;
+        line-height: 100%;
     }
 </style>
