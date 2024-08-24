@@ -35,19 +35,19 @@
     <fieldset>
         <legend>Ambiente</legend>
         <NumberInput
-            label="Humedad relativa" unit="%"
+            label="Humedad relativa" unit="percentage"
             step={1} 
             min={0} max={100}
             bind:value={humidity} 
         />
         <NumberInput
-            label="Temperatura exterior" unit="°C"
+            label="Temperatura exterior" unit="celsius"
             step={0.5} 
             min={-273} max={100}
             bind:value={temp1}
         />
         <NumberInput
-            label="Temperatura interior deseada" unit="°C"
+            label="Temperatura interior deseada" unit="celsius"
             step={0.5} 
             min={-273} max={100}
             bind:value={temp2}
@@ -56,13 +56,13 @@
     <fieldset>
         <legend>Estufa</legend>
         <NumberInput
-            label="Rendimiento de la estufa" unit="%"
+            label="Rendimiento de la estufa" unit="percentage"
             step={1} 
             min={0} max={100}
             bind:value={performance}
         />
         <NumberInput
-            label="Horas de uso por día" unit="h"
+            label="Horas de uso por día" unit="hour"
             step={1} 
             min={0} max={24}
             bind:value={hours}

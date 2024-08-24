@@ -7,11 +7,15 @@
     const unitName = {
         "msquared": "{} en metros cuadrados",
         "degrees": "{} en grados",
+        "celsius": "{} en grados celsius",
+        "hour": "{} en horas",
         "percentage": "porcentaje de {}",
     }
     const unitSym: typeof unitName = {
         "msquared": "m²",
         "degrees": "°",
+        "celsius": "°C",
+        "hour": "h",
         "percentage": "%",
     }
 
@@ -27,26 +31,30 @@
 
     let {
         label, prefix, unit, step, min, max, value = $bindable()
-    }: Props = $props() 
+    }: Props = $props()
 
     let fullLabel = unit ? unitName[unit].replace("{}", label) : label;
 
-    let progress = $derived((value - min) / (max - min));
+    let progress = $derived(
+        (min != undefined) && (max != undefined)
+        ? (value - min) / (max - min)
+        : undefined);
 
     const id = "number-input-" + (counter ++)
 </script>
 
 <Label text={label} tts={fullLabel} for={id}>
-    <input aria-hidden="true" tabindex="-1" bind:value={value} {min} {max} {step} type="range">
-    <div class="progress" style="--progress: {progress}">
-    </div>
+    {#if progress !== undefined}
+        <input aria-hidden="true" tabindex="-1" bind:value={value} {min} {max} {step} type="range">
+        <div class="progress" style="--progress: {progress}"></div>
+    {/if}
     <div>
         {#if prefix}
             <span>{prefix}</span>
         {/if}
         <input {id} bind:value={value} {min} {max} {step} type="number">
         {#if unit}
-            <span aria-hidden="true">{unit}</span>
+            <span aria-hidden="true">{unitSym[unit]}</span>
         {/if}
     </div>
 </Label>
