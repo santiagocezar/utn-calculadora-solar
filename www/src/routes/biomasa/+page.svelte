@@ -37,19 +37,19 @@
         <NumberInput
             label="Humedad relativa" unit="percentage"
             step={1} 
-            min={0} max={100}
+            min={60} max={80}
             bind:value={humidity} 
         />
         <NumberInput
             label="Temperatura exterior" unit="celsius"
             step={0.5} 
-            min={-273} max={100}
+            min={5} max={15}
             bind:value={temp1}
         />
         <NumberInput
             label="Temperatura interior deseada" unit="celsius"
             step={0.5} 
-            min={-273} max={100}
+            min={20} max={24}
             bind:value={temp2}
         />
     </fieldset>
