@@ -7,7 +7,7 @@
 
     interface Props {
         label: string;
-        value: string | number;
+        value: string;
         children: Snippet;
     }
     

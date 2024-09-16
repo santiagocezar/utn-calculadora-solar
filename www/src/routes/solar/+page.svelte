@@ -2,148 +2,157 @@
     import Label from '$lib/components/Label.svelte';
     import NumberInput from '$lib/components/NumberInput.svelte';
     import SelectInput from '$lib/components/SelectInput.svelte';
-import { horaSolar, irradiacionTotal, valoresMensuales } from '$lib/solar'
-import {Chart, registerables} from 'chart.js'
+    
+    import {Chart, registerables} from 'chart.js'
+    
+    import { horaSolar, irradiacionTotal, valoresMensuales } from '$lib/solar'
+    import Casita from '$lib/components/Casita.svelte';
 
-const monthName = (m: number) => new Date(2000, m, 1).toLocaleString(undefined, {month: "long"})
-const TO_RAD = Math.PI / 180
+    // Input values //
 
-let latitudDeg = $state(-31.4);
-let longitudDeg = $state(-62.1);
-let zona = $state(-3);
-let mesString = $state("0");
-let mes = $derived(parseFloat(mesString));
+    let latitudDeg = $state(-31.4);
+    let longitudDeg = $state(-62.1);
+    let zona = $state(-3);
+    let mesString = $state("0");
 
-$effect(() => {
-    console.log(mesString)
-})
+    let inclinacionDeg = $state(31.4);
+    let acimutDeg = $state(180);
+    let cantidad = $state(1);
+    let superficie = $state(1.64);
 
-let inclinacionDeg = $state(31.4);
-let acimutDeg = $state(180);
-let cantidad = $state(1);
-let superficie = $state(1.64);
+    let eficienciaPanel100 = $state(15.15);
+    let eficienciaInversor100 = $state(98);
 
-let eficienciaPanel100 = $state(15.15);
-let eficienciaInversor100 = $state(98);
+    // Converted values //
 
-let latitudRad = $derived(latitudDeg * TO_RAD);
-let longitudRad = $derived(longitudDeg * TO_RAD);
-let inclinacionRad = $derived(inclinacionDeg * TO_RAD);
-let acimutRad = $derived(acimutDeg * TO_RAD);
-let eficienciaPanel = $derived(eficienciaPanel100 / 100);
-let eficienciaInversor = $derived(eficienciaInversor100 / 100);
+    const TO_RAD = Math.PI / 180
 
-const hourAxis = Array.from({length: 24}, (_, i) => i)
-const monthAxis = Array.from({length: 12}, (_, i) => i)
+    let latitudRad = $derived(latitudDeg * TO_RAD);
+    let longitudRad = $derived(longitudDeg * TO_RAD);
+    let inclinacionRad = $derived(inclinacionDeg * TO_RAD);
+    let acimutRad = $derived(acimutDeg * TO_RAD);
+    let eficienciaPanel = $derived(eficienciaPanel100 / 100);
+    let eficienciaInversor = $derived(eficienciaInversor100 / 100);
+    let mes = $derived(parseFloat(mesString));
 
-console.log(monthAxis)
+    // Chart initialization //
 
-let hourlyCanvas = $state<HTMLCanvasElement | undefined>()
-let monthlyCanvas = $state<HTMLCanvasElement | undefined>()
+    const monthName = (m: number) => new Date(2000, m, 1).toLocaleString(undefined, {month: "long"})
+    
+    const hourAxis = Array.from({length: 24}, (_, i) => i)
+    const monthAxis = Array.from({length: 12}, (_, i) => i)
 
-let hourlyChart = $state<Chart | undefined>()
-let monthlyChart = $state<Chart | undefined>()
+    let hourlyCanvas = $state<HTMLCanvasElement | undefined>()
+    let monthlyCanvas = $state<HTMLCanvasElement | undefined>()
 
-$effect (() => {
-    Chart.register(...registerables)
+    let hourlyChart = $state<Chart | undefined>()
+    let monthlyChart = $state<Chart | undefined>()
 
-    hourlyChart = new Chart(hourlyCanvas!, {
-        type: 'bar',
-        data: {
-            labels: hourAxis,
-            datasets: [{
-                label: "kWh generados",
-                data: hourAxis.map(() => 1),
-                borderWidth: 1,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 200,
+    $effect (() => {
+        // This runs when the component is mounted
+
+        Chart.register(...registerables)
+
+        hourlyChart = new Chart(hourlyCanvas!, {
+            type: 'bar',
+            data: {
+                labels: hourAxis,
+                datasets: [{
+                    label: "kWh generados",
+                    data: hourAxis.map(() => 1),
+                    borderWidth: 1,
+                }],
             },
-            plugins: {
-                title: {
-                    display: true,
-                    text: "Irradiación total a lo largo de un día promedio del mes"
-                }
-            },
-            scales: {
-                y: {
-                    min: 0,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 200,
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Irradiación total a lo largo de un día promedio del mes"
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                    }
                 }
             }
-        }
-    })
+        })
 
-    monthlyChart = new Chart(monthlyCanvas!, {
-        type: 'bar',
-        data: {
-            labels: monthAxis.map((_, i) => monthName(i)),
-            datasets: [{
-                label: "kWh generados",
-                data: monthAxis.map(() => 0),
-                borderWidth: 1,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 200,
+        monthlyChart = new Chart(monthlyCanvas!, {
+            type: 'bar',
+            data: {
+                labels: monthAxis.map((_, i) => monthName(i)),
+                datasets: [{
+                    label: "kWh generados",
+                    data: monthAxis.map(() => 0),
+                    borderWidth: 1,
+                }],
             },
-            plugins: {
-                title: {
-                    display: true,
-                    text: "Irradiación total al mediodía a lo largo de todo el año"
-                }
-            },
-            scales: {
-                y: {
-                    min: 0,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 200,
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Irradiación total al mediodía a lo largo de todo el año"
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 0,
+                    }
                 }
             }
-        }
-    })
-})
-
-$effect (() => {
-    const eficienciaInstalacion = .90 // fija
-    
-    const superficieTotal = cantidad * superficie
-    
-    const factorGeneracion = superficieTotal * eficienciaPanel * eficienciaInversor * eficienciaInstalacion
-
-    const mensuales = valoresMensuales(latitudRad, mes)
-    const generacionTotalHoraria = hourAxis.map(h => (
-        irradiacionTotal(
-            latitudRad, inclinacionRad, acimutRad, horaSolar(h, longitudRad, zona, mensuales.ecTiempo), mensuales
-        ).IT * factorGeneracion
-    ))
-
-    console.log(hourAxis)
-
-
-    const generacionTotalMensual = monthAxis.map(m => {
-        const mensuales = valoresMensuales(latitudRad, m);
-        return irradiacionTotal(
-            latitudRad, inclinacionRad, acimutRad, 12, mensuales,
-        ).IT * factorGeneracion
+        })
     })
 
-    // tomar un máximo teórico para la ubicación para que se note la diferencia entre los meses
-    const maximoVerano = mensuales.H * factorGeneracion * 1.2 // un poquito más por las dudas
+    // Calculations and chart updates //
 
-    hourlyChart!.data.datasets[0].data = generacionTotalHoraria
-    monthlyChart!.data.datasets[0].data = generacionTotalMensual
-    hourlyChart!.options.scales!.y!.max = maximoVerano
-    monthlyChart!.options.scales!.y!.max = maximoVerano
-    
-    hourlyChart!.update()
-    monthlyChart!.update()
-})
+    $effect (() => {
+        // This runs every time a value changes
 
+        const eficienciaInstalacion = .90 // fija
+        
+        const superficieTotal = cantidad * superficie
+        
+        const factorGeneracion = superficieTotal * eficienciaPanel * eficienciaInversor * eficienciaInstalacion
+
+        const mensuales = valoresMensuales(latitudRad, mes)
+        const generacionTotalHoraria = hourAxis.map(h => (
+            irradiacionTotal(
+                latitudRad, inclinacionRad, acimutRad, horaSolar(h, longitudRad, zona, mensuales.ecTiempo), mensuales
+            ).IT * factorGeneracion
+        ))
+
+        console.log(hourAxis)
+
+
+        const generacionTotalMensual = monthAxis.map(m => {
+            const mensuales = valoresMensuales(latitudRad, m);
+            return irradiacionTotal(
+                latitudRad, inclinacionRad, acimutRad, 12, mensuales,
+            ).IT * factorGeneracion
+        })
+
+        // tomar un máximo teórico para la ubicación para que se note la diferencia entre los meses
+        const maximoVerano = mensuales.H * factorGeneracion * 1.2 // un poquito más por las dudas
+
+        hourlyChart!.data.datasets[0].data = generacionTotalHoraria
+        monthlyChart!.data.datasets[0].data = generacionTotalMensual
+        hourlyChart!.options.scales!.y!.max = maximoVerano
+        monthlyChart!.options.scales!.y!.max = maximoVerano
+        
+        hourlyChart!.update()
+        monthlyChart!.update()
+    })
 </script>
 
 
@@ -154,6 +163,7 @@ $effect (() => {
 <header>
     <h1>Calculadora Solar - Modo técnico</h1>
 </header>
+<Casita></Casita>
 <div id="form">
     <fieldset>
         <legend>Espacio y tiempo</legend>
