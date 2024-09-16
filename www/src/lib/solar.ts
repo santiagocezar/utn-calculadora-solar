@@ -140,13 +140,15 @@ export function irradiacionTotal(latitud: number, inclinacion: number, acimut: n
      * solar_acim: Ángulo acimutal del sol (1.6.6) en radianes *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    let acimutSolarParam = (cosAnguloCenital * sin(latitud) - sin(declinacion))
+    let cosAcimutSolar = (cosAnguloCenital * sin(latitud) - sin(declinacion))
         / (sin(anguloCenital) * cos(latitud))
 
-    if (acimutSolarParam < -1) acimutSolarParam = -1 // problemas de precisión
+    if (cosAcimutSolar < -1) cosAcimutSolar = -1 // problemas de precisión
 
-    // La función tiene el mismo signo que el ángulo horario, excepto en 0 para asegurar que al operar trigonométricamente el valor sea el mismo que el de los límites por izquiera y por derecha
-    const acimutSolar = (anguloHorario < 0 ? -1 : 1) * abs(acos(acimutSolarParam))
+    // La función tiene el mismo signo que el ángulo horario, excepto en 0 para 
+    // asegurar que al operar trigonométricamente el valor sea el mismo que el
+    // de los límites por izquiera y por derecha
+    const acimutSolar = (anguloHorario < 0 ? -1 : 1) * abs(acos(cosAcimutSolar))
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Io: Irradiación horaria en superficie horizontal a tope de atmósfera  (1.10.4) en kWh/m² *
