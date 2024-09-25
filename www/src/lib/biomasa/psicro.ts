@@ -1,5 +1,17 @@
 const K = 273.15
 
+function memoize<P extends any[], R>(fn: (...p: P) => R) {
+    const cache = new Map<string, R>()
+    return function (...args: P): R {
+        const key = args.join(",")
+        let v: R | undefined
+        if (v = cache.get(key)) return v;
+        v = fn(...args)
+        cache.set(key, v)
+        return v
+    }
+}
+
 /**
  * Densiadad del aire seco [kg/m³]
  * @param Patm Presión atmosférica [Pa]
@@ -15,7 +27,6 @@ export function densidadAire(Patm: number, t: number) {
  */
 export function presionEnAltitud(altura: number){
     if (altura < -500 || altura > 11000) throw new Error('Valor')
-        
         return 101325 * Math.pow(1 - 0.0000225577 * altura, 5.2559);
 }
 

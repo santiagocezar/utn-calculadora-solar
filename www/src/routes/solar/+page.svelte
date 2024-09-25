@@ -6,7 +6,6 @@
     import {Chart, registerables} from 'chart.js'
     
     import { horaSolar, irradiacionTotal, valoresMensuales } from '$lib/solar'
-    import Casita from '$lib/components/Casita.svelte';
 
     // Input values //
 
@@ -163,7 +162,6 @@
 <header>
     <h1>Calculadora Solar - Modo técnico</h1>
 </header>
-<Casita></Casita>
 <div id="form">
     <fieldset>
         <legend>Espacio y tiempo</legend>

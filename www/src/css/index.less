@@ -1,6 +1,12 @@
 @lite-shadow: 0 2px 8px #f0f0fa;
 @top-shiny: 0 1px 0 1px var(--shine, #fff) inset;
 
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
 .card {
     --color: #f1f1ff;
     --border: color-mix(in lch, black 20%, var(--color));
