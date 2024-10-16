@@ -4,12 +4,21 @@
     import casita from './models/casa-sintecho.obj?url'
     import { items, cosmeticItems } from './items'
 
+    import { objectMap } from '../functional'
+
     import Three from './Three.svelte'
 
     import { N8AOPostPass } from "n8ao"
     import { EffectComposer, RenderPass, SMAAEffect } from "postprocessing";
     import { SMAAPreset } from 'postprocessing';
     import { EffectPass } from 'postprocessing';
+
+    interface Props {
+        visible: { [key in keyof (typeof items)]: boolean }
+    }
+
+    const {visible: itemsVisible}: Props = $props();
+
 
     // Initializing Three
 
@@ -40,6 +49,21 @@
     cam.position.set(-1, +1, -1).multiplyScalar(cameraSize)
 
     cam.lookAt(world.position);
+
+    const itemScenes = objectMap(items, ({ position, rotation, url }) => {
+        const scn = new T.Scene()
+        casaGroup.add(scn);
+
+        scn.position.x = position[0];
+        scn.position.y = position[1];
+        scn.position.z = position[2];
+
+        scn.rotateX(rotation[0] / 180 * Math.PI);
+        scn.rotateY(rotation[1] / 180 * Math.PI);
+        scn.rotateZ(rotation[2] / 180 * Math.PI);
+
+        return scn;
+    })
 
     function renderInit(renderer: T.WebGLRenderer) {
         composer = new EffectComposer(renderer);
@@ -85,7 +109,7 @@
         const delta = clock.getDelta()
 
         // rotable.rotation.y = Math.cos(clock.elapsedTime * Math.PI) * Math.PI / 4
-        composer!.render()
+        // composer!.render()
         // renderer.render(world, cam)
     }
 
@@ -106,8 +130,23 @@
     }
 
     $effect(() => {
+        objectMap(itemsVisible, (visible, name) => {
+            itemScenes[name].visible = visible
+            console.log(`${items[name].name} is visible: ${visible}`)
+        })
+        composer!.render();
+    })
+
+    $effect(() => {
         document.addEventListener("keypress", onKeyPress)
 
+        objectMap(items, ({url}, name) => {
+            loader.load(url, obj => {
+                itemScenes[name].add(obj)
+
+                composer!.render()
+            })
+        })
         loader.load(casita, obj => {
             const center = new T.Vector3()
             const box = new T.Box3()
@@ -121,9 +160,10 @@
             casaGroup.position.x -= center.x
             casaGroup.position.y -= center.y
             casaGroup.position.z -= center.z
+            composer!.render()
         })
 
-        for (const item of [...Object.values(items), ...Object.values(cosmeticItems)]) {
+        for (const item of Object.values(cosmeticItems)) {
             loader.load(item.url, obj => {
                 casaGroup.add(obj);
 
@@ -136,6 +176,7 @@
                 obj.rotateX(item.rotation[0] / 180 * Math.PI);
                 obj.rotateY(item.rotation[1] / 180 * Math.PI);
                 obj.rotateZ(item.rotation[2] / 180 * Math.PI);
+                composer!.render()
             })
         }
     })

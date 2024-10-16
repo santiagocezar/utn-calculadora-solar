@@ -8,15 +8,30 @@ body {
 }
 
 .card {
-    --color: #f1f1ff;
+    --color: #f8f8ff;
     --border: color-mix(in lch, black 20%, var(--color));
-    --bevel: color-mix(in lch, black 5%, var(--color));
     --shine: color-mix(in lch, white 60%, var(--color));
-    border: 1px solid var(--border);
-    border-bottom-width: 2px;
+
+    position: relative;
+    background-clip: padding-box;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 2px 2px;
     background-color: var(--color);
     border-radius: .5rem;
-    box-shadow: @lite-shadow, @top-shiny;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        margin: -3px -2px;
+        border-radius: inherit;
+        background-image: linear-gradient(to bottom, var(--shine), var(--color));
+        box-shadow: @lite-shadow;
+        border: 1px solid var(--border);
+        border-bottom-width: 2px;
+    }
 }
 
 :root {

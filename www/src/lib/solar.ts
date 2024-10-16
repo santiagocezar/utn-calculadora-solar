@@ -44,17 +44,17 @@ export function valoresMensuales(latitud: number, mes: number) {
      * exce: La distancia de la tierra al sol en AU (1.4.1*) *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    /*
-     * En la review de Maleki (energies), usa un factor de 0.0033, citando al artículo de Beckman.
-     * Esto debe ser un error, porque en el artículo se usa un valor 0.033, así que tomamos eso
-     */
-    const excentricidad = 1 + 0.033 * cos(2 * PI * n / 365)
-
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * hora_salida: Ángulo horario de puesta y salida del sol (1.6.10) en radianes *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     const anguloSalida = acos(-tan(latitud)*tan(declinacion))
+
+    /*
+     * En la review de Maleki (energies), usa un factor de 0.0033, citando al artículo de Beckman.
+     * Esto debe ser un error, porque en el artículo se usa un valor 0.033, así que tomamos eso
+     */
+    const excentricidad = 1 + 0.033 * cos(2 * PI * n / 365)
 
     /* * * * * * * * * * * * * * * * * * * *
      * anio_frac: Año fraccionario (1.4.2) *

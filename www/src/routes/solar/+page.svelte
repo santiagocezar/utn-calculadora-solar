@@ -142,7 +142,7 @@
         })
 
         // tomar un máximo teórico para la ubicación para que se note la diferencia entre los meses
-        const maximoVerano = mensuales.H * factorGeneracion * 1.2 // un poquito más por las dudas
+        const maximoVerano = Math.max(...generacionTotalMensual) * 1.2 // un poquito más por las dudas
 
         hourlyChart!.data.datasets[0].data = generacionTotalHoraria
         monthlyChart!.data.datasets[0].data = generacionTotalMensual
